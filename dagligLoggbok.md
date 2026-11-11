@@ -144,3 +144,93 @@ Nästa steg blir att fortsätta utveckla Mix-klassen genom att lägga till stöd
 ### Sammanfattning av dagen
 
 Dagen började med ett videomöte med Johan Hellberg där vi gick igenom kraven för att MixerLab ska kunna spara användarnas mixes i en databas. Efter mötet fortsatte jag undersöka projektets befintliga struktur och hur MixerLab hanterar backtracks, tracks och inställningar. Jag gick därefter vidare till implementationen och skapade grunden för en ny domänklass, Mix, i C#. Jag implementerade även en Create-metod och grundläggande validering av mixens titel. Nästa steg blir att utveckla domänklassen vidare och därefter skriva enhetstester.
+
+**Datum:** 11 november 2026  
+**Veckodag:** Onsdag  
+**Arbetsplats:** Chain Of Sounds
+
+### 1. Arbetsuppgifter
+
+Idag fortsatte jag arbetet med min LIA-uppgift, som handlar om att ändra MixerLab så att användarnas mixes sparas i en databas i stället för i webbläsarens localStorage.
+
+Dagen började med ett möte med Johan Hellberg mellan 09:30 och 10:40. Under mötet gick vi igenom hur arbetet skulle genomföras och diskuterade vilken teknik som skulle användas.
+
+Vi kom fram till att all användardata ska hanteras i Java i stället för C#. Den tidigare planen att skapa en Mix-klass i mixer-api ändrades därför. I stället ska implementationen göras i studio-bass-api.
+
+Efter mötet skapade jag en ny Git-branch från dev:
+
+`feature/mixerlab-database-persistence-java`
+
+Jag började därefter bygga upp strukturen för den nya funktionen i Java.
+
+Jag arbetade bland annat med:
+
+- Skapa en ny entitetsklass, Mix, för att representera en sparad mix.
+- Lägga till en koppling mellan Mix och User.
+- Skapa MixEq för att hantera mixens equalizer-inställningar.
+- Lägga till stöd för att spara ID:n för valda ljudspår.
+- Skapa MixRepository för framtida databasoperationer.
+- Påbörja arbetet med MixRequestDTO för att ta emot information från frontend.
+
+Jag undersökte även befintliga entiteter och enum-klasser i projektet för att försöka följa samma struktur och kodstandard.
+
+### 2. Tekniker och verktyg
+
+- Java.
+- Spring Boot.
+- Spring Data JPA och Hibernate.
+- PostgreSQL och Flyway.
+- IntelliJ IDEA.
+- Git och GitHub.
+- Maven.
+
+### 3. Problem och lösningar
+
+En utmaning under dagen var att få igång studio-bass-api lokalt i IntelliJ.
+
+Jag stötte på problem med databasanslutningen eftersom projektet använder miljövariabler för att ansluta till PostgreSQL. Jag saknar för närvarande de lokala databasuppgifterna som krävs för anslutningen.
+
+Jag undersökte projektets konfigurationsfiler och olika profiler för att förstå hur applikationen hanterar databasanslutningen.
+
+Vi kom fram till att jag kan fortsätta utveckla Java-klasserna utan att ansluta till databasen eller använda en testdatabas. Jag kan därmed fortsätta med implementationen och kontrollera kodens struktur innan databasanslutningen är tillgänglig.
+
+Jag undersökte även befintliga enum-klasser i projektet och kunde konstatera att EQ-inställningarna passar bättre som heltalsvärden än som enum, eftersom reglagen ska kunna ha värden mellan 0 och 100.
+
+### 4. Ny kunskap
+
+Jag har fått en bättre förståelse för hur man bygger upp en backendfunktion med Java och Spring Boot.
+
+Jag har bland annat arbetat med:
+
+- Hur `@Entity` används för att representera en databasentitet.
+- Hur `@ManyToOne` används för att skapa en relation mellan Mix och User.
+- Hur `@Embedded` och `@Embeddable` kan användas för att dela upp information i separata klasser.
+- Hur `@ElementCollection` används för att hantera listor med värden som tillhör en entitet.
+- Hur `JpaRepository` tillhandahåller färdiga metoder för databasoperationer.
+- Hur DTO-klasser används för att överföra information mellan frontend och backend.
+- Hur Git-branches kan användas för att separera utvecklingsarbete från dev-branchen.
+
+### 5. Reflektion
+
+Dagen har framför allt handlat om att anpassa implementationen efter den nya tekniska lösningen och påbörja uppbyggnaden av funktionen i Java.
+
+Mötet med Johan gav mig en tydligare bild av hur arbetet ska genomföras och varför användardata ska hanteras i Java i stället för C#.
+
+Jag har kommit igång med de grundläggande klasserna och fått en bättre förståelse för hur entiteter, repositories och DTO-klasser samverkar i en Spring Boot-applikation.
+
+Även om jag inte har kunnat starta applikationen på grund av att jag saknar databasuppgifter har jag kunnat fortsätta med implementationen utan att vara beroende av en databasanslutning.
+
+Nästa steg blir att fortsätta utveckla DTO-klasserna och därefter implementera service- och controller-delarna. Målet är att kunna skapa, hämta, uppdatera och ta bort sparade mixes.
+
+**Arbetstid:** 09:30–15:30
+
+- 09:30–10:40: Möte med Johan Hellberg.
+- 10:40–12:30: Eget arbete med LIA-uppgiften.
+- 12:30–13:30: Lunch.
+- 13:30–15:30: Fortsatt arbete med LIA-uppgiften.
+
+**Effektiv arbetstid:** 5 timmar.
+
+### Sammanfattning av dagen
+
+Dagen började med ett möte med Johan Hellberg där vi beslutade att flytta implementationen av MixerLab-funktionen från C# till Java i studio-bass-api. Efter mötet skapade jag en ny Git-branch och började bygga upp den nya strukturen. Jag skapade entitetsklasserna Mix och MixEq samt MixRepository och påbörjade arbetet med MixRequestDTO. Jag undersökte även projektets befintliga kodstruktur och databasinställningar. Eftersom jag saknar databasuppgifter fortsätter jag tills vidare med implementationen utan databasanslutning. Nästa steg blir att fortsätta med DTO-, service- och controller-delarna.

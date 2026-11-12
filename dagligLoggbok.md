@@ -234,3 +234,107 @@ Nästa steg blir att fortsätta utveckla DTO-klasserna och därefter implementer
 ### Sammanfattning av dagen
 
 Dagen började med ett möte med Johan Hellberg där vi beslutade att flytta implementationen av MixerLab-funktionen från C# till Java i studio-bass-api. Efter mötet skapade jag en ny Git-branch och började bygga upp den nya strukturen. Jag skapade entitetsklasserna Mix och MixEq samt MixRepository och påbörjade arbetet med MixRequestDTO. Jag undersökte även projektets befintliga kodstruktur och databasinställningar. Eftersom jag saknar databasuppgifter fortsätter jag tills vidare med implementationen utan databasanslutning. Nästa steg blir att fortsätta med DTO-, service- och controller-delarna.
+
+**Datum:** 12 november 2026  
+**Veckodag:** Torsdag  
+**Arbetsplats:** Chain Of Sounds
+
+### 1. Arbetsuppgifter
+
+Idag fortsatte jag arbetet med min LIA-uppgift, som handlar om att ändra MixerLab så att användarnas mixes sparas i en databas i stället för i webbläsarens localStorage.
+
+Dagen började med ett videomöte med Johan Hellberg mellan 09:30 och 10:50. Under mötet följde vi upp arbetet med implementationen i Java och diskuterade hur jag skulle komma vidare med databasanslutningen och utvecklingsmiljön.
+
+Johan instruerade mig att installera Infisical CLI, som används för att hantera projektets miljövariabler och hemligheter. Detta behövdes för att jag skulle kunna komma åt rätt konfiguration och ansluta till databasen.
+
+Efter mötet fortsatte jag arbetet med `studio-bass-api`.
+
+Jag arbetade bland annat med:
+
+- Uppdatera `Mix`-entiteten så att den innehåller rätt tabellnamn och koppling till EQ-inställningarna.
+- Använda `@Embedded` för att koppla samman `Mix` med `MixEq`.
+- Justera listan med sparade track-ID:n.
+- Lägga till `@Builder.Default` för att hantera standardvärdet för listan med track-ID:n.
+- Konfigurera Lombok i Maven för att säkerställa att getters och setters genereras korrekt.
+- Installera och konfigurera Infisical CLI.
+- Starta PostgreSQL och Java-tjänsten med Docker Compose.
+- Arbeta med Flyway-migrationen för att skapa databastabellerna för sparade mixes.
+
+Jag genomförde även en ombyggnad av Java-tjänsten och kontrollerade att projektet kunde kompileras och att testerna fungerade.
+
+### 2. Tekniker och verktyg
+
+- Java.
+- Spring Boot.
+- Spring Data JPA och Hibernate.
+- PostgreSQL.
+- Flyway.
+- Maven.
+- Lombok.
+- Docker och Docker Compose.
+- Infisical CLI.
+- IntelliJ IDEA.
+- PowerShell.
+- Git och GitHub.
+
+### 3. Problem och lösningar
+
+Ett problem under dagen var att få Java-projektet att kompileras korrekt med Lombok.
+
+Vid kompileringen saknades flera getters och setters i projektets klasser. Jag undersökte Maven-konfigurationen och upptäckte att Lombok behövde konfigureras tydligare.
+
+**Lösning:** Jag uppdaterade Lombok-versionen och konfigurationen för Maven Compiler Plugin. Efter ändringarna kunde projektet kompileras utan problem.
+
+Ett annat problem var att ansluta Java-tjänsten till PostgreSQL när jag försökte starta applikationen lokalt. Databasens värdnamn kunde inte hittas.
+
+**Lösning:** Jag använde i stället Docker Compose för att starta PostgreSQL och Java-tjänsten tillsammans. På så sätt kunde tjänsterna kommunicera inom samma Docker-nätverk.
+
+Jag stötte även på problem med Flyway-migrationen. När applikationen startade försökte Flyway skapa tabellen `mixes`, men PostgreSQL rapporterade att tabellen redan existerade.
+
+Detta beror på att Hibernate tidigare hade skapat tabellen automatiskt när `ddl-auto=update` var aktiverat. Jag har identifierat orsaken, men behöver fortfarande undersöka de befintliga tabellerna och anpassa migrationen.
+
+### 4. Ny kunskap
+
+Jag har fått bättre förståelse för hur olika delar av en Java-backend konfigureras och samverkar.
+
+Jag har bland annat lärt mig mer om:
+
+- Hur Lombok konfigureras tillsammans med Maven Compiler Plugin.
+- Hur Infisical CLI används för att hantera miljövariabler och hemligheter.
+- Hur Docker Compose kan användas för att starta flera tjänster som behöver kommunicera med varandra.
+- Skillnaden mellan Hibernate-inställningarna `ddl-auto=update` och `ddl-auto=validate`.
+- Hur Flyway hanterar databasmigrationer och varför det är viktigt att hålla databasschemat och migrationerna synkroniserade.
+- Hur Hibernate skapar databastabeller utifrån JPA-entiteter.
+
+Jag fick även praktisk erfarenhet av att felsöka problem som uppstår när flera verktyg och tekniker samverkar i samma projekt.
+
+### 5. Reflektion
+
+Dagen har framför allt handlat om att få utvecklingsmiljön att fungera och komma vidare med databasdelen av MixerLab.
+
+Det tog en del tid att felsöka Lombok, miljövariabler och Docker-konfigurationen, men jag lyckades få Java-projektet att kompileras och starta tillsammans med PostgreSQL.
+
+En viktig framgång under dagen var att samtliga 229 tester passerade vid bygget av projektet.
+
+Jag har däremot inte löst problemet med Flyway-migrationen ännu. Jag har identifierat varför det uppstår och behöver nu undersöka hur de befintliga tabellerna ser ut innan jag gör några ändringar.
+
+Jag känner att jag har fått en bättre förståelse för hur databaskonfiguration, Hibernate och Flyway fungerar tillsammans.
+
+Nästa steg blir att undersöka de befintliga databastabellerna och få Flyway-migrationen att fungera korrekt. Därefter kan jag fortsätta med service- och controller-delarna för att implementera funktionaliteten för att skapa, hämta, uppdatera och ta bort sparade mixes.
+
+**Arbetstid:** 09:30–17:00
+
+- 09:30–10:50: Videomöte med Johan Hellberg.
+- 10:50–13:30: Eget arbete med LIA-uppgiften.
+- 13:30–14:00: Lunch.
+- 14:00–17:00: Fortsatt arbete med Java-backenden, Infisical, Docker och Flyway.
+
+**Effektiv arbetstid:** 7 timmar.
+
+### Sammanfattning av dagen
+
+Dagen började med ett videomöte med Johan Hellberg där vi följde upp arbetet med MixerLab och diskuterade hur jag skulle komma vidare med databasanslutningen. Efter mötet installerade och konfigurerade jag Infisical CLI för att komma åt projektets miljövariabler.
+
+Jag fortsatte utvecklingen av Java-backenden genom att justera entiteterna och Maven-konfigurationen. Jag lyckades lösa kompileringsproblemen med Lombok och fick projektet att byggas framgångsrikt. Samtliga 229 tester passerade.
+
+Jag startade även PostgreSQL och Java-tjänsten med Docker Compose. Ett problem återstår med Flyway-migrationen eftersom tabellen `mixes` redan finns i databasen. Jag har identifierat orsaken och kommer att fortsätta felsökningen nästa arbetsdag.

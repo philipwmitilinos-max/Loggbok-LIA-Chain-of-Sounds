@@ -338,3 +338,136 @@ Dagen började med ett videomöte med Johan Hellberg där vi följde upp arbetet
 Jag fortsatte utvecklingen av Java-backenden genom att justera entiteterna och Maven-konfigurationen. Jag lyckades lösa kompileringsproblemen med Lombok och fick projektet att byggas framgångsrikt. Samtliga 229 tester passerade.
 
 Jag startade även PostgreSQL och Java-tjänsten med Docker Compose. Ett problem återstår med Flyway-migrationen eftersom tabellen `mixes` redan finns i databasen. Jag har identifierat orsaken och kommer att fortsätta felsökningen nästa arbetsdag.
+
+**Datum:** 13 november 2026  
+**Veckodag:** Fredag  
+**Arbetsplats:** Chain Of Sounds
+
+### 1. Arbetsuppgifter
+
+Idag fortsatte jag arbetet med min LIA-uppgift, som handlar om att ändra MixerLab så att användarnas mixes sparas i en databas i stället för i webbläsarens localStorage.
+
+Dagen började med att jag fortsatte arbetet med Java-backenden i `studio-bass-api`. Jag färdigställde de återstående delarna för att hantera sparade mixes.
+
+Jag arbetade bland annat med:
+
+- Färdigställa `MixService` med metoder för att skapa, hämta, uppdatera och ta bort användarnas mixes.
+- Färdigställa `MixController` med API-endpoints för mixhanteringen.
+- Använda den befintliga `UserService` för att koppla sparade mixes till rätt användare.
+- Använda `MixRepository` för att hantera databasoperationerna.
+- Kontrollera att DTO-klasserna används korrekt för att ta emot och returnera information om mixes.
+
+När Java-klasserna var färdiga fortsatte jag arbetet med databasmigreringen.
+
+Jag behövde först starta Docker Desktop och autentisera mig på nytt med Infisical CLI för att kunna använda projektets miljövariabler och starta tjänsterna.
+
+Därefter undersökte jag problemet med Flyway-migrationen V26. Jag upptäckte att det redan fanns tabeller i databasen som hade skapats tidigare av Hibernate när `ddl-auto=update` var aktiverat.
+
+Jag undersökte de befintliga tabellerna och deras relationer. Bland annat upptäckte jag att det fanns flera tabeller relaterade till mixhanteringen, såsom `mixes`, `mix`, `mix_tracks` och `track_id`.
+
+Jag arbetade sedan med att anpassa Flyway-migrationen så att den kunde hantera de befintliga tabellerna.
+
+Efter ändringarna kunde migrationen genomföras. Jag byggde om Java-tjänsten med Docker Compose och kontrollerade loggarna för att säkerställa att Flyway, Hibernate och Spring Boot startade korrekt.
+
+Jag öppnade även Swagger och kontrollerade att de fyra nya API-endpointsen för Mix fanns tillgängliga.
+
+Under eftermiddagen började jag arbeta med enhetstester för `MixService` med JUnit 5 och Mockito.
+
+Jag skapade testklassen `MixServiceTest` och implementerade två tester:
+
+- `createMix_shouldSaveAndReturnMix()` – kontrollerar att en mix kan skapas och att rätt information returneras.
+- `getUserMixes_shouldReturnUserMixes()` – kontrollerar att en användares sparade mixes hämtas och returneras korrekt.
+
+Jag använde Mockito för att simulera `MixRepository` och `UserService`, vilket gör att testerna kan köras utan att behöva skriva testdata till den gemensamma databasen.
+
+När jag var klar med dagens arbete skapade jag en Git-commit på min testbranch för att spara testklassen.
+
+### 2. Tekniker och verktyg
+
+- Java.
+- Spring Boot.
+- Spring Data JPA och Hibernate.
+- PostgreSQL.
+- Flyway.
+- Maven.
+- Lombok.
+- Docker och Docker Compose.
+- Infisical CLI.
+- Swagger.
+- JUnit 5.
+- Mockito.
+- IntelliJ IDEA.
+- PowerShell.
+- Git och GitHub.
+
+### 3. Problem och lösningar
+
+Ett problem under förmiddagen var att Flyway-migrationen V26 inte kunde genomföras eftersom tabellen `mixes` redan existerade i databasen.
+
+Jag undersökte databasschemat och upptäckte att det fanns flera äldre och nya tabeller relaterade till mixhanteringen. Det fanns även skillnader mellan den befintliga databasstrukturen och den struktur som Java-entiteterna förväntade sig.
+
+**Lösning:** Jag anpassade Flyway-migrationen genom att bland annat använda `CREATE TABLE IF NOT EXISTS` för att hantera tabeller som redan existerade. Jag arbetade även med kolumnnamnen och relationerna mellan tabellerna. Efter ändringarna kunde Flyway genomföra migrationen och Java-tjänsten startade korrekt.
+
+Ett annat problem var att jag inte ville genomföra tester som skapade eller ändrade poster i den gemensamma databasen utan att först få klartecken från projektansvarig.
+
+**Lösning:** Jag valde att börja med isolerade enhetstester med JUnit 5 och Mockito. På så sätt kan jag testa servicelogiken genom att simulera repository-anropen i stället för att använda den riktiga databasen.
+
+Under arbetet med det första enhetstestet uppstod även ett problem eftersom jag hade använt `@Mock` på `MixService` i stället för `@InjectMocks`.
+
+**Lösning:** Jag ändrade annoteringen till `@InjectMocks`. Skillnaden är att `@Mock` skapar en simulerad klass, medan `@InjectMocks` skapar den klass som ska testas och injicerar dess beroenden. Efter ändringen kunde testet köras mot den riktiga servicelogiken.
+
+### 4. Ny kunskap
+
+Jag har fått bättre förståelse för hur olika delar av en Java-backend samverkar när man implementerar databaspersistens.
+
+Jag har bland annat lärt mig mer om:
+
+- Hur en service och controller samverkar för att hantera API-anrop.
+- Hur en användares sparade data kan kopplas till rätt användare genom den befintliga användarservicen.
+- Hur Flyway hanterar migrationer när databastabeller redan existerar.
+- Hur befintliga databastabeller kan påverka nya migrationer.
+- Hur Hibernate och Flyway behöver samverka för att hålla databasschemat korrekt.
+- Hur Swagger kan användas för att kontrollera att API-endpoints finns tillgängliga.
+- Skillnaden mellan `@Mock` och `@InjectMocks`.
+- Hur `when()`, `thenReturn()` och `thenAnswer()` används i Mockito.
+- Hur `verify()` används för att kontrollera att en metod har anropats.
+- Hur enhetstester kan genomföras utan att ansluta till en riktig databas.
+
+Jag har även fått mer praktisk erfarenhet av att arbeta med Git-branches och separera testarbete från den ursprungliga implementationen.
+
+### 5. Reflektion
+
+Dagen har varit innehållsrik och jag har kommit vidare med flera viktiga delar av min LIA-uppgift.
+
+Under förmiddagen lyckades jag färdigställa Java-klasserna för mixhanteringen och lösa problemet med Flyway-migrationen. Det krävde en del undersökning av den befintliga databasen eftersom tabellerna inte helt överensstämde med den nya implementationen.
+
+En viktig framgång var att Flyway kunde genomföra V26 och att `studio-bass-api` startade korrekt. Jag kunde även kontrollera att de nya API-endpointsen fanns tillgängliga i Swagger.
+
+Under eftermiddagen kom jag igång med enhetstesterna för `MixService`. Jag fick en bättre förståelse för hur Mockito fungerar och hur man kan testa servicelogik utan att behöva använda en riktig databas.
+
+Jag har nu två fungerande testfall för att skapa och hämta mixes. Nästa steg blir att fortsätta med tester för uppdatering och borttagning av mixes samt kontrollera att användare inte kan ändra eller ta bort andra användares mixes.
+
+### Arbetstid:
+
+**Arbetstid:** 09:30–16:30
+
+- 09:30–09:40: Kort videomöte med Clara Westberg.
+- 09:40–12:00: Färdigställande av Mix-klasserna samt arbete med Docker, Infisical och Flyway-migrationen.
+- 12:00–12:30: Lunch.
+- 12:30–13:00: Verifiering av backend och påbörjat arbete med enhetstester för `MixService`.
+- 13:00–13:30: Videomöte med Nisse Palm. Jag redogjorde för vad jag hade arbetat med under veckan.
+- 13:30–16:30: Fortsatt arbete med backend och utveckling av enhetstester för `MixService`.
+
+**Effektiv arbetstid:** 6 timmar och 30 minuter.
+
+### Sammanfattning av dagen
+
+Dagen började med att jag färdigställde Java-klasserna för att hantera sparade mixes i MixerLab. Därefter fortsatte jag arbetet med databasmigreringen och undersökte varför Flyway inte kunde skapa tabellen `mixes`.
+
+Jag undersökte den befintliga databasschemat och anpassade Flyway-migrationen V26 för att hantera de tabeller som redan existerade. Efter ändringarna kunde migrationen genomföras och Java-tjänsten startade korrekt via Docker Compose.
+
+Jag kontrollerade även de nya API-endpointsen i Swagger.
+
+Under eftermiddagen började jag skriva enhetstester för `MixService` med JUnit 5 och Mockito. Jag skapade två testfall för att kontrollera att mixes kan skapas och hämtas korrekt. Jag valde att använda mockade beroenden för att undvika att skriva testdata till den gemensamma databasen.
+
+Avslutningsvis committade jag testklassen till min testbranch med commit-meddelandet `test: add MixService unit tests`.

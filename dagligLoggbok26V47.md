@@ -12,74 +12,121 @@ En del av planeringen handlade om att lägga till och göra om Mission-sidan. Vi
 
 Efter mötet fortsatte jag med mitt pågående arbete med databaspersistens för MixerLab i Java-projektet `studio-bass-api`.
 
-Jag fortsatte framför allt med att skriva enhetstester för `MixService` med JUnit 5 och Mockito.
+Jag fortsatte framför allt med att utveckla och förbättra enhetstesterna för `MixService` med JUnit 5 och Mockito.
 
-Följande tester har nu implementerats och godkänts:
+Jag började med att färdigställa de grundläggande testerna för tjänstens CRUD-operationer:
 
-- `createMix_shouldSaveAndReturnMix()`
-- `getUserMixes_shouldReturnUserMixes()`
-- `updateMix_shouldUpdateExistingMix()`
-- `deleteMix_shouldDeleteExistingMix()`
+- Skapa en mix.
+- Hämta användarens mixes.
+- Uppdatera en mix.
+- Radera en mix.
 
-Jag körde samtliga tester i IntelliJ och kunde konstatera att alla fyra blev godkända.
+Därefter implementerade jag negativa tester för att kontrollera att en användare inte kan uppdatera eller radera en mix som tillhör någon annan användare.
+
+Jag förbättrade även strukturen i `MixServiceTest` genom att använda `@BeforeEach`. På så sätt kunde jag flytta gemensam testdata till en setup-metod och minska upprepningar i testmetoderna.
+
+Jag organiserade också testerna med hjälp av kommentarrubriker för att tydligare skilja mellan lyckade operationer, felhantering och tester för datarelationer.
+
+Efter detta fortsatte jag med felhanteringstester. Jag implementerade och godkände följande tester:
+
+- `createMix_shouldThrowExceptionWhenUserCannotBeFound()`
+- `getUserMixes_shouldThrowExceptionWhenUserCannotBeFound()`
+- `updateMix_shouldThrowExceptionWhenUserCannotBeFound()`
+- `deleteMix_shouldThrowExceptionWhenUserCannotBeFound()`
+
+Dessa tester kontrollerar att rätt undantag kastas när användaren inte kan hittas och att repository inte anropas i onödan.
+
+Jag gick därefter vidare till testerna för datarelationer. Jag implementerade testet `createMix_shouldAssociateMixWithCorrectUser()` med hjälp av `ArgumentCaptor`.
+
+Testet kontrollerar att den skapade mixen kopplas till rätt användare och att information som namn, backtrack-ID, EQ-inställningar och låt-ID:n följer med när mixen skickas till repository.
+
+Avslutningsvis genomförde jag en Git-commit med dagens ändringar. Committen lyckades och innehöll de nya testerna för felhantering och datarelationer i `MixServiceTest`.
 
 ### 2. Tekniker och verktyg
 
 - Java
 - Spring Boot
+- Spring Data JPA
+- PostgreSQL
 - JUnit 5
 - Mockito
 - IntelliJ IDEA
-- MixService
-- MixRepository
-- MixResponseDto
+- Git och GitHub
+- `@BeforeEach`
+- `assertThrows()`
+- `verify()`
+- `when().thenReturn()`
+- `ArgumentCaptor`
+- `MixService`
+- `MixRepository`
+- `MixRequestDto`
+- `MixResponseDto`
+- `Mix`
+- `MixEq`
 
 ### 3. Problem och lösningar
 
-Under arbetet med testet `getUserMixes_shouldReturnUserMixes()` uppstod ett kompileringsfel.
+Under arbetet med `getUserMixes_shouldReturnUserMixes()` uppstod ett kompileringsfel eftersom testet förväntade sig en lista med `Mix` medan metoden i `MixService` returnerar `List<MixResponseDto>`.
 
-Felet berodde på att metoden `getUserMixes()` returnerar en lista med `MixResponseDto` och inte en lista med `Mix`-objekt.
+Jag anpassade testet till rätt returtyp och ändrade hur jag hämtade namnet från resultatet eftersom `MixResponseDto` är en Java-record.
 
-Jag anpassade därför testet så att det använde rätt returtyp. Jag ändrade även hur jag hämtade namnet från resultatet eftersom `MixResponseDto` är en Java-record och använder `name()`.
+Jag upptäckte också att flera testmetoder innehöll upprepade deklarationer av användare och testdata. För att minska upprepningarna använde jag `@BeforeEach` och skapade en gemensam setup-metod.
 
-Efter ändringarna kunde testet köras korrekt.
+Efter ändringarna körde jag samtliga sex befintliga tester och alla blev godkända.
+
+En annan del av arbetet var att förbättra översikten i testklassen. Jag valde att använda kommentarrubriker i stället för mer avancerad gruppering med `@Nested`.
+
+Under arbetet med felhanteringstesterna använde jag Mockito för att simulera situationer där användaren inte kan hittas. Jag kontrollerade även att repository inte anropades när användaren saknades.
+
+När jag började testa datarelationerna använde jag `ArgumentCaptor` för att fånga objektet som skickades till repository. På så sätt kunde jag kontrollera att rätt information fanns i den skapade mixen.
+
+Vid förberedelserna inför Git-commit fick jag en varning om att radslut konverteras från CRLF till LF. Det är en varning om radslut och inte ett fel i Java-koden.
 
 ### 4. Ny kunskap
 
-Jag har fått mer förståelse för hur man testar tjänstelagret med JUnit 5 och Mockito.
+Under dagens arbete har jag fått mer förståelse för hur man strukturerar och testar en serviceklass.
 
-Jag har bland annat arbetat vidare med:
+Jag har framför allt arbetat vidare med:
 
-- Hur man använder `@Mock` för att skapa mockade beroenden.
-- Hur `when().thenReturn()` används för att styra vad en mockad metod ska returnera.
-- Hur `verify()` används för att kontrollera att en metod faktiskt har anropats.
-- Hur man delar upp tester i Arrange, Act och Assert.
-- Skillnaden mellan en entitet (`Mix`) och en DTO (`MixResponseDto`).
-- Hur man testar att en tjänst kan skapa, hämta, uppdatera och radera data.
+- Hur `@BeforeEach` används för att skapa gemensam testdata.
+- Hur Mockito används för att simulera olika situationer och fel.
+- Hur `assertThrows()` används för att kontrollera att undantag kastas.
+- Hur `verify()` och `never()` används för att kontrollera att metoder anropas eller inte anropas.
+- Hur `ArgumentCaptor` kan användas för att fånga och undersöka objekt som skickas till ett repository.
+- Skillnaden mellan lyckade operationer och negativa tester.
+- Skillnaden mellan entiteter och DTO:er.
+- Hur `@ManyToOne`, `@Embedded` och `@ElementCollection` används för att beskriva relationer och lagring av data med JPA.
+
+Jag har även fått en bättre förståelse för skillnaden mellan enhetstester med Mockito och integrationstester som faktiskt testar kommunikationen med databasen.
 
 ### 5. Reflektion
 
-Dagens arbete har gått bra. Jag har kunnat fortsätta med enhetstesterna för `MixService` och fått samtliga fyra grundläggande tester godkända.
+Dagens arbete har gått bra och jag har kommit vidare med testningen av `MixService`.
 
-Jag stötte på ett kompileringsfel när jag arbetade med `getUserMixes_shouldReturnUserMixes()`, men genom att kontrollera returtypen och anpassa testet kunde jag lösa problemet.
+Jag har lagt tid på att inte bara få testerna att fungera utan även göra testklassen mer lättläst och enklare att underhålla.
 
-Nästa steg blir att skriva negativa tester för att kontrollera att en användare inte kan uppdatera eller radera en mix som tillhör någon annan.
+En viktig del har varit att börja tänka mer på felhantering och vad som ska hända när användaren eller en mix inte kan hittas.
 
-### Arbetstid
+Jag har också börjat kontrollera att rätt information och relationer följer med när en mix skapas. Genom att använda `ArgumentCaptor` kunde jag undersöka objektet som skickades till repository.
 
-| Tid         | Arbetsuppgift                                                                                                                                                        |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 09:30–10:48 | Sprintplaneringsmöte via videomöte med Johan Hellberg och Nisse Palm.                                                                                                |
-| 10:48–12:00 | Fortsatt arbete med enhetstester för `MixService`.                                                                                                                   |
-| 12:00–13:00 | Lunch.                                                                                                                                                               |
-| 13:00–13:26 | Fortsatt arbete med `MixServiceTest`. Implementerade och körde testerna för att hämta, uppdatera och radera mixes. Samtliga fyra grundläggande tester blev godkända. |
+Jag är ännu inte färdig med `MixServiceTest`, utan kommer att fortsätta med ytterligare tester för datarelationerna. Därefter behöver jag även undersöka hur JPA-relationerna fungerar mot databasen genom integrationstester.
 
-**Effektiv arbetstid hittills:** 2 timmar och 56 minuter.
+### Arbetstid:\*\* 09:30-17:00
+
+09:30–10:48: Sprintplaneringsmöte via videomöte med Johan Hellberg och Nisse Palm.
+10:48–12:00: Fortsatt arbete med enhetstester för `MixService`. Färdigställde grundläggande tester för CRUD-operationerna och arbetade med negativa tester.
+12:00–13:00: Lunch.
+13:00–17:00: Fortsatt arbete med `MixServiceTest`. Förbättrade testklassens struktur med `@BeforeEach` och kommentarrubriker. Implementerade och godkände ytterligare två felhanteringstester för situationer där användaren inte hittas vid skapande eller hämtning av mixes.
+15:38–16:41: Fortsatte med felhanteringstester för uppdatering och radering när användaren inte kan hittas. Båda testerna godkändes. Påbörjade tester för datarelationer och implementerade ett test med ArgumentCaptor för att kontrollera att en mix kopplas till rätt användare och att dess information följer med. Avslutade arbetet med en lyckad Git-commit.
+
+**Effektiv arbetstid hittills:** 6 timmar och 30 minuter.
 
 ### Sammanfattning av dagen
 
-Dagen har hittills bestått av ett sprintplaneringsmöte och fortsatt utvecklingsarbete med MixerLab-projektets databaspersistens i Java.
+Dagen har bestått av ett sprintplaneringsmöte och fortsatt utvecklingsarbete med MixerLab-projektets databaspersistens i Java.
 
-Jag har arbetat med enhetstester för `MixService` och fått fyra grundläggande tester godkända. Arbetet har gett mig bättre förståelse för hur JUnit 5 och Mockito kan användas för att testa tjänstelagret utan att behöva ansluta till databasen.
+Jag har arbetat vidare med enhetstesterna för `MixService`, förbättrat strukturen i testklassen och implementerat ytterligare tester för felhantering.
 
-Nästa steg är att fortsätta med negativa tester för att säkerställa att användare endast kan hantera sina egna mixes.
+Samtliga tidigare tester är fortsatt godkända efter refaktoreringen. Jag har dessutom fått fyra felhanteringstester godkända och påbörjat testerna för datarelationer.
+
+Nästa steg blir att fortsätta testa relationerna mellan olika objekt i systemet och därefter gå vidare med integrationstester mot databasen.

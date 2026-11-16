@@ -1,3 +1,5 @@
+# Daglig loggbok – LIA
+
 **Datum:** 9 november 2026  
 **Veckodag:** Måndag  
 **Arbetsplats:** Chain Of Sounds

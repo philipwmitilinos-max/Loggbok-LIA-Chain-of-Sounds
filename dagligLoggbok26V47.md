@@ -130,3 +130,80 @@ Jag har arbetat vidare med enhetstesterna för `MixService`, förbättrat strukt
 Samtliga tidigare tester är fortsatt godkända efter refaktoreringen. Jag har dessutom fått fyra felhanteringstester godkända och påbörjat testerna för datarelationer.
 
 Nästa steg blir att fortsätta testa relationerna mellan olika objekt i systemet och därefter gå vidare med integrationstester mot databasen.
+
+--
+
+**Datum:** 17 november 2026  
+**Veckodag:** Tisdag  
+**Arbetsplats:** Chain of Sounds
+
+### 1. Arbetsuppgifter
+
+Dagen började med ett videomöte om den dagliga sprinten tillsammans med Johan Hellberg och Clara Westberg.
+
+Under mötet tog jag upp frågan om databasen och om det var okej att skapa en egen databas för utvecklingsarbetet med MixerLab. Clara lämnade mötet tidigare och jag fortsatte diskussionen med Johan. Han godkände att jag skapar en databas lokalt på min egen dator.
+
+Johan påminde mig även om att det finns en checklista på Trello som beskriver vad vi ska uppnå med MixerLab-uppgiften.
+
+Checklistan handlar om att ändra MixerLab så att användarnas mixes sparas i en databas i stället för i webbläsaren.
+
+**User story:**
+
+Som användare vill jag att mina mixes i MixerLab sparas ordentligt i en databas så att de inte försvinner när jag refreshar eller stänger ner webbsidan.
+
+**Metod för att spara MixerLab:**
+
+- Det ska gå att spara MixerLab-inställningar (backtracks, tracks och equalizer-volymer).
+- Det ska gå att spara flera varianter med namn.
+- Det ska gå att uppdatera en befintlig sparning.
+
+**Acceptanskriterier:**
+
+1. Användare ska kunna spara flera mixes.
+2. Användare kan spara sina mixes i MixerLab.
+3. Användarens mixes sparas i en databas.
+4. Sparade mixes försvinner inte när sidan stängs ner eller uppdateras.
+5. Alla funktioner i MixerLab är anpassade till förändringen.
+
+### 2. Tekniker och verktyg
+
+- Trello
+- MixerLab
+- Java
+- Spring Boot
+- PostgreSQL
+- Databaspersistens
+
+### 3. Problem och lösningar
+
+Jag behövde stämma av med Johan om det var tillåtet att skapa en egen databas för utvecklingen av MixerLabs databaspersistens.
+
+Efter diskussionen fick jag klartecken att skapa databasen lokalt på min dator.
+
+Johan påminde mig också om Trello-checklistan, vilket gav mig en tydligare överblick över vilka krav och acceptanskriterier som ska uppfyllas.
+
+### 4. Ny kunskap
+
+Jag har fått en tydligare bild av hur projektets user story och acceptanskriterier ska användas för att styra utvecklingsarbetet.
+
+Jag har även fått klartecken att arbeta med en lokal databas under utvecklingen av MixerLabs databaspersistens.
+
+### 5. Reflektion
+
+Dagens möte gav mig en bättre överblick över vad som förväntas av MixerLab-uppgiften.
+
+Det känns bra att ha fått klartecken att skapa en lokal databas eftersom det ger mig möjlighet att fortsätta utveckla och testa databaspersistensen i min egen utvecklingsmiljö.
+
+Jag kommer att använda Trello-checklistan som stöd för att kontrollera att implementationen uppfyller samtliga acceptanskriterier.
+
+### Arbetstid
+
+09:30–10:27 Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Diskuterade bland annat databasen för MixerLab, fick klartecken att skapa en lokal databas och gick igenom Trello-checklistan för uppgiften.
+
+**Effektiv arbetstid hittills:** 57 minuter.
+
+### Sammanfattning av dagen
+
+Dagen började med ett sprintmöte där vi diskuterade det fortsatta arbetet. Jag fick klartecken att skapa en lokal databas för MixerLab och blev påmind om Trello-checklistan med uppgiftens user story och acceptanskriterier.
+
+Nästa steg blir att fortsätta utvecklingsarbetet med databaspersistensen och använda checklistan som stöd.

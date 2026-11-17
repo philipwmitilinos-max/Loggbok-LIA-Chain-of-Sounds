@@ -165,45 +165,112 @@ Som användare vill jag att mina mixes i MixerLab sparas ordentligt i en databas
 4. Sparade mixes försvinner inte när sidan stängs ner eller uppdateras.
 5. Alla funktioner i MixerLab är anpassade till förändringen.
 
+Efter mötet fortsatte jag med mitt pågående arbete med databaspersistens för MixerLab i Java-projektet `studio-bass-api`.
+
+Jag fortsatte där jag slutade föregående arbetsdag och började implementera tester för datarelationer i `MixServiceTest`.
+
+Jag implementerade och fick följande tre tester godkända:
+
+**1. `createMix_shouldAssociateMixWithCorrectUser()`**
+
+Testet kontrollerar att en mix kopplas till rätt användare när den skapas.
+
+Jag använde `ArgumentCaptor` för att fånga `Mix`-objektet som skickas till `MixRepository` och kontrollera att användaren och övrig information följer med korrekt.
+
+**2. `createMix_shouldSaveCorrectEqSettings()`**
+
+Testet kontrollerar att EQ-inställningarna överförs korrekt när en mix skapas.
+
+Jag skapade ett `MixEq`-objekt med olika värden för amplitud och frekvens och kontrollerade att samtliga åtta värden fanns med i objektet som skickades till repository.
+
+**3. `createMix_shouldSaveCorrectTrackIds()`**
+
+Testet kontrollerar att rätt låt-ID:n följer med när en mix skapas.
+
+Jag skapade en lista med tre olika track-ID:n och kontrollerade att mixen innehöll rätt antal och rätt värden.
+
+Samtliga tre tester blev godkända.
+
 ### 2. Tekniker och verktyg
 
-- Trello
-- MixerLab
 - Java
 - Spring Boot
+- Spring Data JPA
 - PostgreSQL
-- Databaspersistens
+- JUnit 5
+- Mockito
+- IntelliJ IDEA
+- Trello
+- `ArgumentCaptor`
+- `@BeforeEach`
+- `assertEquals()`
+- `assertSame()`
+- `assertTrue()`
+- `verify()`
+- `when().thenReturn()`
+- `MixService`
+- `MixRepository`
+- `MixRequestDto`
+- `MixResponseDto`
+- `Mix`
+- `MixEq`
 
 ### 3. Problem och lösningar
 
-Jag behövde stämma av med Johan om det var tillåtet att skapa en egen databas för utvecklingen av MixerLabs databaspersistens.
+Under sprintmötet behövde jag stämma av med Johan om det var tillåtet att skapa en egen databas för utvecklingen av MixerLabs databaspersistens.
 
 Efter diskussionen fick jag klartecken att skapa databasen lokalt på min dator.
 
 Johan påminde mig också om Trello-checklistan, vilket gav mig en tydligare överblick över vilka krav och acceptanskriterier som ska uppfyllas.
 
+Under arbetet med datarelationstesterna behövde jag kontrollera att rätt information skickas från `MixService` till `MixRepository`.
+
+Jag använde `ArgumentCaptor` från Mockito för att fånga objektet som skickades till repository. På så sätt kunde jag kontrollera att användaren, EQ-inställningarna och låt-ID:n fanns med och hade rätt värden.
+
+Testerna genomfördes utan några rapporterade fel.
+
 ### 4. Ny kunskap
 
-Jag har fått en tydligare bild av hur projektets user story och acceptanskriterier ska användas för att styra utvecklingsarbetet.
+Under dagens arbete har jag fått mer förståelse för hur datarelationer kan testas med JUnit 5 och Mockito.
 
-Jag har även fått klartecken att arbeta med en lokal databas under utvecklingen av MixerLabs databaspersistens.
+Jag har framför allt arbetat vidare med:
+
+- Hur `ArgumentCaptor` används för att fånga objekt som skickas till ett repository.
+- Hur `assertSame()` används för att kontrollera att två referenser pekar på samma objekt.
+- Hur `assertEquals()` används för att jämföra förväntade och faktiska värden.
+- Hur `assertTrue()` används för att kontrollera innehållet i en lista.
+- Hur EQ-inställningar kan representeras med ett `@Embeddable`-objekt.
+- Hur en mix kan kopplas till en användare genom en JPA-relation.
+- Hur listor med track-ID:n kan hanteras i en entitet.
+
+Jag har även fått en tydligare förståelse för skillnaden mellan att testa hur en serviceklass hanterar sina objekt och att testa hur objekten faktiskt sparas i databasen.
 
 ### 5. Reflektion
 
-Dagens möte gav mig en bättre överblick över vad som förväntas av MixerLab-uppgiften.
+Dagens arbete har hittills gått bra och jag har kommit vidare med testningen av `MixService`.
 
-Det känns bra att ha fått klartecken att skapa en lokal databas eftersom det ger mig möjlighet att fortsätta utveckla och testa databaspersistensen i min egen utvecklingsmiljö.
+Jag har nu fått tre tester för datarelationer godkända. Det känns bra att kunna kontrollera att rätt användare, EQ-inställningar och låt-ID:n följer med när en mix skapas.
 
-Jag kommer att använda Trello-checklistan som stöd för att kontrollera att implementationen uppfyller samtliga acceptanskriterier.
+Jag har också fått mer erfarenhet av `ArgumentCaptor`, som är användbart när jag behöver undersöka objekt som skickas mellan olika delar av applikationen.
+
+En viktig sak jag har lärt mig är att dessa enhetstester kontrollerar hur `MixService` hanterar informationen, men inte att informationen faktiskt lagras korrekt i PostgreSQL.
+
+Jag behöver därför fortsätta med ytterligare tester och senare även genomföra integrationstester mot databasen.
 
 ### Arbetstid
 
-09:30–10:27 Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Diskuterade bland annat databasen för MixerLab, fick klartecken att skapa en lokal databas och gick igenom Trello-checklistan för uppgiften.
+09:30–10:27: Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Diskuterade bland annat databasen för MixerLab, fick klartecken att skapa en lokal databas och gick igenom Trello-checklistan för uppgiften.
 
-**Effektiv arbetstid hittills:** 57 minuter.
+10:27–12:00: Pågående Fortsatt arbete med `MixServiceTest`. Implementerade och godkände tre tester för datarelationer. Kontrollerade att en mix kopplas till rätt användare och att EQ-inställningar och track-ID:n överförs korrekt till repository.
+
+**Effektiv arbetstid hittills:** Uppdateras när dagens arbetstider är fastställda.
 
 ### Sammanfattning av dagen
 
-Dagen började med ett sprintmöte där vi diskuterade det fortsatta arbetet. Jag fick klartecken att skapa en lokal databas för MixerLab och blev påmind om Trello-checklistan med uppgiftens user story och acceptanskriterier.
+Dagen började med ett sprintmöte där vi diskuterade det fortsatta arbetet med MixerLab. Jag fick klartecken att skapa en lokal databas och blev påmind om Trello-checklistan med uppgiftens user story och acceptanskriterier.
 
-Nästa steg blir att fortsätta utvecklingsarbetet med databaspersistensen och använda checklistan som stöd.
+Efter mötet fortsatte jag utvecklingsarbetet med `MixServiceTest`.
+
+Jag implementerade och fick tre tester för datarelationer godkända. Testerna kontrollerar kopplingen mellan `Mix` och `User`, EQ-inställningarna samt listan med track-ID:n.
+
+Nästa steg blir att fortsätta testa att flera mixes kan tillhöra samma användare och att relationerna hanteras korrekt när en befintlig mix uppdateras.

@@ -191,21 +191,82 @@ Jag skapade en lista med tre olika track-ID:n och kontrollerade att mixen inneh�
 
 Samtliga tre tester blev godkända.
 
+Därefter fortsatte jag med ytterligare två tester för datarelationer:
+
+**4. `getUserMixes_shouldReturnMultipleMixesForSameUser()`**
+
+Testet kontrollerar att flera mixes kan tillhöra samma användare och att dessa returneras korrekt när användarens mixes hämtas.
+
+**5. `updateMix_shouldPreserveUserAndUpdateMixData()`**
+
+Testet kontrollerar att användarrelationen bevaras när en befintlig mix uppdateras.
+
+Jag kontrollerade även att mixens namn, backtrack-ID, EQ-inställningar och track-ID:n uppdateras korrekt.
+
+När samtliga tester var färdiga körde jag hela `MixServiceTest` tillsammans. Alla 15 tester gick igenom utan fel. Därefter gjorde jag en commit av arbetet.
+
+Efter detta började jag förbereda integrationstester för MixerLab.
+
+Jag gick igenom projektets befintliga integrationstestklasser för att förstå hur de är uppbyggda och hur projektet använder Testcontainers och PostgreSQL.
+
+Jag granskade följande filer:
+
+- `AbstractIntegrationTest.java`
+- `CommunityProfileIT.java`
+- `MeProfileIT.java`
+- `StripeCheckoutErrorContractIT.java`
+- `FlywaySchemaReconciliationIT.java`
+
+Jag kunde konstatera att projektet redan har en gemensam integrationstestkonfiguration som startar en PostgreSQL-container med Testcontainers. Jag kunde därför utgå från den befintliga strukturen i stället för att skapa en helt ny testkonfiguration.
+
+Jag gick även igenom följande klasser för att förbereda integrationstesterna:
+
+- `MixService.java`
+- `Mix.java`
+- `MixEq.java`
+- `UserService.java`
+
+Genomgången hjälpte mig att förstå hur `MixService` skapar, hämtar, uppdaterar och tar bort mixes samt hur användaren kopplas till en mix.
+
+Jag undersökte även hur `MixEq` är uppbyggd och hur EQ-inställningarna lagras med hjälp av JPA-annoteringen `@Embeddable`.
+
+Därefter skapade jag testklassen `MixIT.java` i integrationstestpaketet.
+
+Jag började med testet `createMix_shouldPersistMixInDatabase()`.
+
+Testet anropar den riktiga `MixService`, sparar en mix och hämtar sedan tillbaka den från PostgreSQL med hjälp av `MixRepository`.
+
+Testet gick igenom utan några felmeddelanden. Det bekräftar att den grundläggande sparningen och hämtningen av en mix fungerar i integrationstestmiljön.
+
+Efter det började jag förbereda nästa test, som ska kontrollera att en mix sparas med rätt användarrelation.
+
 ### 2. Tekniker och verktyg
 
 - Java
 - Spring Boot
 - Spring Data JPA
+- Hibernate
 - PostgreSQL
+- Testcontainers
+- Docker
 - JUnit 5
 - Mockito
+- AssertJ
 - IntelliJ IDEA
+- Maven
+- Git
 - Trello
 - `ArgumentCaptor`
 - `@BeforeEach`
+- `@Embedded`
+- `@Embeddable`
+- `@ElementCollection`
+- `@ManyToOne`
+- `@DynamicPropertySource`
 - `assertEquals()`
 - `assertSame()`
 - `assertTrue()`
+- `assertThat()`
 - `verify()`
 - `when().thenReturn()`
 - `MixService`
@@ -214,6 +275,9 @@ Samtliga tre tester blev godkända.
 - `MixResponseDto`
 - `Mix`
 - `MixEq`
+- `MixServiceTest`
+- `MixIT`
+- `AbstractIntegrationTest`
 
 ### 3. Problem och lösningar
 
@@ -229,6 +293,18 @@ Jag använde `ArgumentCaptor` från Mockito för att fånga objektet som skickad
 
 Testerna genomfördes utan några rapporterade fel.
 
+När jag gick vidare till integrationstesterna behövde jag först förstå hur projektets befintliga testmiljö var uppbyggd.
+
+Jag undersökte `AbstractIntegrationTest.java` och upptäckte att projektet redan använder Testcontainers för att starta en PostgreSQL-databas automatiskt vid integrationstester.
+
+Det innebar att jag kunde återanvända den befintliga lösningen i stället för att skapa en separat testkonfiguration.
+
+En annan viktig del var att förstå skillnaden mellan mina tidigare Mockito-tester och de nya integrationstesterna.
+
+Mockito-testerna kontrollerar service-logiken genom att använda mockade beroenden. Integrationstesterna använder däremot riktiga Spring-komponenter och PostgreSQL för att kontrollera att databaslagringen fungerar.
+
+Det första integrationstestet genomfördes utan problem.
+
 ### 4. Ny kunskap
 
 Under dagens arbete har jag fått mer förståelse för hur datarelationer kan testas med JUnit 5 och Mockito.
@@ -243,34 +319,55 @@ Jag har framför allt arbetat vidare med:
 - Hur en mix kan kopplas till en användare genom en JPA-relation.
 - Hur listor med track-ID:n kan hanteras i en entitet.
 
-Jag har även fått en tydligare förståelse för skillnaden mellan att testa hur en serviceklass hanterar sina objekt och att testa hur objekten faktiskt sparas i databasen.
+Jag har även fått mer kunskap om integrationstester och hur Testcontainers kan användas tillsammans med Spring Boot för att starta en riktig PostgreSQL-databas vid testning.
+
+Jag har lärt mig mer om skillnaden mellan enhetstester och integrationstester:
+
+- Enhetstester kontrollerar en avgränsad del av koden, exempelvis en servicemetod.
+- Integrationstester kontrollerar att flera delar fungerar tillsammans, exempelvis Service, Repository, JPA och PostgreSQL.
+
+Jag har också fått en bättre förståelse för hur JPA hanterar relationer mellan entiteter och hur `@Embedded` och `@ElementCollection` påverkar hur data lagras i databasen.
 
 ### 5. Reflektion
 
-Dagens arbete har hittills gått bra och jag har kommit vidare med testningen av `MixService`.
+Dagens arbete har gått bra och jag har kommit vidare med testningen av `MixService`.
 
-Jag har nu fått tre tester för datarelationer godkända. Det känns bra att kunna kontrollera att rätt användare, EQ-inställningar och låt-ID:n följer med när en mix skapas.
+Jag har nu slutfört de 15 Mockito-testerna och fått samtliga godkända. Det känns bra att kunna kontrollera att rätt användare, EQ-inställningar och låt-ID:n följer med när en mix skapas och uppdateras.
 
 Jag har också fått mer erfarenhet av `ArgumentCaptor`, som är användbart när jag behöver undersöka objekt som skickas mellan olika delar av applikationen.
 
-En viktig sak jag har lärt mig är att dessa enhetstester kontrollerar hur `MixService` hanterar informationen, men inte att informationen faktiskt lagras korrekt i PostgreSQL.
+Efter att ha slutfört enhetstesterna kunde jag gå vidare till integrationstesterna. Jag har nu fått mitt första integrationstest godkänt, vilket visar att en mix faktiskt kan sparas och hämtas från PostgreSQL.
 
-Jag behöver därför fortsätta med ytterligare tester och senare även genomföra integrationstester mot databasen.
+En viktig sak jag har lärt mig är att enhetstester och integrationstester fyller olika funktioner. Enhetstesterna kontrollerar hur `MixService` hanterar informationen, medan integrationstesterna kontrollerar att informationen även kan lagras och hämtas korrekt från databasen.
+
+Nästa steg blir att fortsätta testa användarrelationen, EQ-inställningarna och track-ID:n i databasen. Därefter ska jag testa hämtning, uppdatering och borttagning av mixes.
 
 ### Arbetstid
 
-09:30–10:27: Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Diskuterade bland annat databasen för MixerLab, fick klartecken att skapa en lokal databas och gick igenom Trello-checklistan för uppgiften.
+**09:30–10:27:** Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Diskuterade bland annat databasen för MixerLab, fick klartecken att skapa en lokal databas och gick igenom Trello-checklistan för uppgiften.
 
-10:27–12:00: Pågående Fortsatt arbete med `MixServiceTest`. Implementerade och godkände tre tester för datarelationer. Kontrollerade att en mix kopplas till rätt användare och att EQ-inställningar och track-ID:n överförs korrekt till repository.
+**10:27–12:00:** Fortsatt arbete med `MixServiceTest`. Implementerade och godkände tre tester för datarelationer. Kontrollerade att en mix kopplas till rätt användare och att EQ-inställningar och track-ID:n överförs korrekt till repository.
 
-**Effektiv arbetstid hittills:** Uppdateras när dagens arbetstider är fastställda.
+**12:00–13:00:** Lunch.
+
+**Efter 13:00:** Fortsatte med de återstående testerna för datarelationer i `MixServiceTest`. Implementerade tester för flera mixes hos samma användare och för att användarrelationen bevaras vid uppdatering. Körde samtliga 15 tester med godkänt resultat och gjorde en commit.
+
+Därefter granskade jag projektets befintliga integrationsteststruktur, gick igenom relevanta klasser och skapade `MixIT.java`. Implementerade och körde det första integrationstestet, `createMix_shouldPersistMixInDatabase()`, som gick igenom utan fel.
+
+**Effektiv arbetstid:** Uppdateras när dagens sluttid är fastställd.
 
 ### Sammanfattning av dagen
 
 Dagen började med ett sprintmöte där vi diskuterade det fortsatta arbetet med MixerLab. Jag fick klartecken att skapa en lokal databas och blev påmind om Trello-checklistan med uppgiftens user story och acceptanskriterier.
 
-Efter mötet fortsatte jag utvecklingsarbetet med `MixServiceTest`.
+Före lunchen fortsatte jag utvecklingsarbetet med `MixServiceTest` och implementerade tre tester för datarelationer.
 
-Jag implementerade och fick tre tester för datarelationer godkända. Testerna kontrollerar kopplingen mellan `Mix` och `User`, EQ-inställningarna samt listan med track-ID:n.
+Efter lunchen slutförde jag ytterligare två tester för datarelationer. Jag körde därefter samtliga 15 Mockito-tester tillsammans och fick ett godkänt resultat. Jag gjorde även en commit av arbetet.
 
-Nästa steg blir att fortsätta testa att flera mixes kan tillhöra samma användare och att relationerna hanteras korrekt när en befintlig mix uppdateras.
+Därefter undersökte jag projektets befintliga integrationsteststruktur och hur Testcontainers används för att starta PostgreSQL.
+
+Jag gick igenom `MixService`, `Mix`, `MixEq` och `UserService` för att förstå hur delarna fungerar tillsammans inför integrationstesterna.
+
+Jag skapade sedan `MixIT.java` och implementerade mitt första integrationstest, `createMix_shouldPersistMixInDatabase()`, som gick igenom utan fel.
+
+Jag har därmed gått vidare från att testa service-logiken med Mockito till att testa den faktiska databaslagringen för MixerLab.

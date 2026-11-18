@@ -212,13 +212,13 @@ Det känns bra att mitt första integrationstest också gick igenom. Nästa steg
 
 ### Arbetstid: 09:30-16:00
 
-**09:30–10:27:** Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Diskuterade databasen för MixerLab och gick igenom Trello-checklistan.
+09:30–10:27: Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Diskuterade databasen för MixerLab och gick igenom Trello-checklistan.
 
-**10:27–12:00:** Fortsatt arbete med `MixServiceTest`. Implementerade och godkände tre tester för datarelationer.
+10:27–12:00: Fortsatt arbete med `MixServiceTest`. Implementerade och godkände tre tester för datarelationer.
 
-**12:00–13:00:** Lunch.
+12:00–13:00: Lunch.
 
-**13:00-16:00:** Slutförde ytterligare två tester för datarelationer. Körde samtliga 15 tester med godkänt resultat och gjorde en commit. Därefter gick jag igenom projektets integrationsteststruktur, skapade `MixIT.java` och körde mitt första integrationstest.
+13:00-16:00: Slutförde ytterligare två tester för datarelationer. Körde samtliga 15 tester med godkänt resultat och gjorde en commit. Därefter gick jag igenom projektets integrationsteststruktur, skapade `MixIT.java` och körde mitt första integrationstest.
 
 **Effektiv arbetstid:** 5 timmar och 30 minuter.
 
@@ -246,8 +246,83 @@ Jag har därmed tagit nästa steg i arbetet med att kontrollera att MixerLabs mi
 
 Dagen började med ett videomöte om den dagliga sprinten tillsammans med Johan Hellberg och Clara Westberg.
 
-Under mötet gick vi igenom vad vi hade arbetat med under föregående arbetsdag. Vi diskuterade det fortsatta arbetet med MixerLab och jag fick i uppgift att fortsätta med det pågående arbetet med integrationstesterna i Java-projektet `studio-bass-api`.
+Under mötet gick vi igenom vad vi hade arbetat med föregående dag. Jag fick i uppgift att fortsätta med det pågående arbetet med integrationstesterna för MixerLab i Java-projektet `studio-bass-api`.
+
+Efter mötet fortsatte jag arbetet i `MixIT.java`.
+
+Jag började med att testa att en mix sparas med rätt användarrelation. Under arbetet använde jag projektets befintliga `UserRepo` och korrigerade importen för `User` till rätt paket.
+
+Därefter implementerade jag ytterligare integrationstester för att kontrollera att EQ-inställningar och track-ID:n sparas korrekt i PostgreSQL.
+
+Jag stötte på ett problem med Hibernate och `LazyInitializationException` när jag försökte läsa track-ID:n från databasen. Jag löste problemet genom att använda `@Transactional` på testmetoden.
+
+Samtliga fyra genomförda integrationstester gick igenom utan fel.
+
+Därefter började jag arbeta med nästa test, som ska kontrollera att en användare endast får tillbaka sina egna mixes.
+
+### 2. Tekniker och verktyg
+
+- Java
+- Spring Boot
+- Spring Data JPA
+- Hibernate
+- PostgreSQL
+- Testcontainers
+- Docker
+- JUnit 5
+- AssertJ
+- IntelliJ IDEA
+- Maven
+- Git
+- `MixIT`
+- `MixService`
+- `MixRepository`
+- `UserRepo`
+- `@Transactional`
+
+### 3. Problem och lösningar
+
+Under testningen av track-ID:n uppstod ett `LazyInitializationException`.
+
+Problemet berodde på att Hibernate försökte läsa en samling från databasen efter att sessionen hade stängts.
+
+Jag löste detta genom att lägga till `@Transactional` på testmetoden. Därefter gick testet igenom utan fel.
+
+Jag behövde även korrigera importen för `User` eftersom klassen ligger i paketet `com.chainofsounds.entity` och inte `com.chainofsounds.domain`.
+
+### 4. Ny kunskap
+
+Under dagens arbete har jag fått mer förståelse för:
+
+- Hur integrationstester kan kontrollera relationer mellan användare och mixes.
+- Hur EQ-inställningar och listor med track-ID:n sparas i PostgreSQL.
+- Vad `LazyInitializationException` innebär i Hibernate.
+- Hur `@Transactional` kan användas för att hålla en databastransaktion öppen under ett test.
+
+### 5. Reflektion
+
+Dagens arbete har gått bra och jag har kommit vidare med integrationstesterna för MixerLab.
+
+Jag har nu fått fyra integrationstester godkända. Under arbetet fick jag även lösa ett problem med Hibernate och lazy loading, vilket gav mig en bättre förståelse för hur JPA hanterar data från databasen.
+
+Nästa steg blir att fortsätta testa hämtning av användarens egna mixes samt uppdatering och borttagning.
 
 ### Arbetstid
 
-**09:30–10:25:** Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Gick igenom föregående dags arbete och planerade det fortsatta arbetet med MixerLab.
+09:30–10:25: Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Gick igenom föregående dags arbete och planerade det fortsatta arbetet med integrationstesterna.
+
+10:25-12:00: Fortsatte arbetet med integrationstesterna i `MixIT.java`. Testade användarrelationer, EQ-inställningar och track-ID:n. Löste ett problem med Hibernate genom att använda `@Transactional`. Samtliga fyra genomförda integrationstester gick igenom.
+
+12:00-13:00: Lunch.
+
+**Effektiv arbetstid:** Uppdateras när dagens sluttid är fastställd.
+
+### Sammanfattning av dagen
+
+Dagen började med ett daily sprint-möte där vi gick igenom föregående dags arbete och planerade det fortsatta arbetet.
+
+Efter mötet fortsatte jag med integrationstesterna för MixerLab. Jag implementerade och körde tester för användarrelationer, EQ-inställningar och track-ID:n.
+
+Under testningen stötte jag på ett problem med Hibernate som jag löste genom att använda `@Transactional`.
+
+Jag har hittills fått fyra integrationstester godkända och fortsätter nu med att testa att användare endast kan hämta sina egna mixes.

@@ -246,25 +246,21 @@ Jag har därmed tagit nästa steg i arbetet med att kontrollera att MixerLabs mi
 
 Dagen började med ett videomöte om den dagliga sprinten tillsammans med Johan Hellberg och Clara Westberg.
 
-Under mötet gick vi igenom vad vi hade arbetat med föregående dag. Jag fick i uppgift att fortsätta med det pågående arbetet med integrationstesterna för MixerLab i Java-projektet `studio-bass-api`.
+Under mötet gick vi igenom vad vi hade arbetat med föregående dag. Jag fick i uppgift att fortsätta arbetet med integrationstesterna för MixerLab i Java-projektet `studio-bass-api`.
 
 Efter mötet fortsatte jag arbetet i `MixIT.java`.
 
-Jag började med att testa att en mix sparas med rätt användarrelation. Därefter implementerade jag ytterligare integrationstester för att kontrollera att EQ-inställningar och track-ID:n sparas korrekt i PostgreSQL.
+Jag implementerade och testade funktionalitet för att kontrollera att mixes sparas med rätt användarrelation, att EQ-inställningar och track-ID:n sparas korrekt samt att en användare endast får tillbaka sina egna mixes.
 
-Jag stötte på ett problem med Hibernate och `LazyInitializationException` när jag försökte läsa track-ID:n från databasen. Jag löste problemet genom att använda `@Transactional` på testmetoden.
+Under testningen av track-ID:n uppstod ett problem med Hibernate och `LazyInitializationException`. Jag löste problemet genom att använda `@Transactional` på testmetoden. Jag behövde även korrigera ett anrop till `getFirst()` som inte fungerade i testmiljön.
 
-Därefter fortsatte jag med testet som kontrollerar att en användare endast får tillbaka sina egna mixes.
+Fem integrationstester är nu godkända. Därefter fortsatte jag med testningen av uppdateringsfunktionen, men stötte på ett problem där Hibernate försökte hantera en oföränderlig lista med track-ID:n. Problemet är ännu inte löst.
 
-Jag implementerade sedan integrationstester för att kontrollera att uppdatering och borttagning av mixes fungerar korrekt.
+Senare undersökte jag varför GitHub Actions rapporterade fel i kontrollen Java Backend (Maven). Genom att läsa testloggen kunde jag identifiera att två tester i `FlywaySchemaReconciliationIT` misslyckades.
 
-Under testningen av uppdateringsfunktionen uppstod ett problem där Hibernate inte kunde hantera en oföränderlig lista med track-ID:n. Jag löste detta genom att använda `ArrayList` när listan tilldelas i `MixService`.
+Jag undersökte därefter `V26__create_mixes_tables.sql` och upptäckte att migrationen försöker ta bort en constraint som inte finns i databasschemat. Jag granskade även `FlywaySchemaReconciliationIT.java` för att förstå hur testet skapar databasen och kör Flyway.
 
-Jag upptäckte även ett fel i testet för uppdatering av EQ-inställningar. Testet skickade av misstag in de ursprungliga EQ-värdena i stället för de nya. Efter att jag korrigerat detta gick testet igenom.
-
-När samtliga sju integrationstester var färdiga körde jag hela testsviten. Både unit-testerna och integrationstesterna blev godkända.
-
-Avslutningsvis skapade jag en Git-commit för arbetet med integrationstesterna.
+Arbetet med att felsöka migrationen är inte färdigt. Jag valde att avsluta arbetsdagen efter att ha ringat in problemet och identifierat vad som behöver undersökas vidare.
 
 ### 2. Tekniker och verktyg
 
@@ -280,69 +276,68 @@ Avslutningsvis skapade jag en Git-commit för arbetet med integrationstesterna.
 - Mockito
 - IntelliJ IDEA
 - Maven
+- GitHub Actions
+- Flyway
 - Git
 - `MixIT`
 - `MixService`
 - `MixRepository`
 - `UserRepo`
+- `FlywaySchemaReconciliationIT`
 - `@Transactional`
-- `ArrayList`
+- `application-test.properties`
 
 ### 3. Problem och lösningar
 
-Under testningen av track-ID:n uppstod ett `LazyInitializationException`.
+Under testningen av track-ID:n uppstod ett `LazyInitializationException`. Problemet berodde på att Hibernate försökte läsa en samling efter att sessionen hade stängts. Jag löste detta genom att lägga till `@Transactional` på testmetoden.
 
-Problemet berodde på att Hibernate försökte läsa en samling från databasen efter att sessionen hade stängts.
+Vid testningen av uppdateringsfunktionen uppstod ett `UnsupportedOperationException` när Hibernate försökte ändra en oföränderlig lista. Detta problem är ännu inte löst.
 
-Jag löste detta genom att lägga till `@Transactional` på testmetoden. Därefter gick testet igenom utan fel.
+Jag upptäckte även att GitHub Actions rapporterade två misslyckade tester i `FlywaySchemaReconciliationIT`.
 
-Ett annat problem uppstod när Hibernate försökte uppdatera en oföränderlig lista. Jag löste detta genom att skapa en ny ändringsbar `ArrayList` när track-ID:n tilldelas till mixen.
+Felet visade att migrationen `V26__create_mixes_tables.sql` försöker ta bort en constraint som inte existerar i testdatabasen.
 
-Jag upptäckte även att ett av testerna skickade in fel EQ-objekt. Genom att använda de nya EQ-inställningarna i stället för de ursprungliga värdena kunde jag få testet att fungera korrekt.
+Jag undersökte migrationen och testklassen och kunde identifiera var problemet uppstår. Nästa steg blir att anpassa migrationen så att den fungerar med både befintliga och nya databastabeller.
 
 ### 4. Ny kunskap
 
 Under dagens arbete har jag fått mer förståelse för:
 
-- Hur integrationstester kan kontrollera relationer mellan användare och mixes.
-- Hur EQ-inställningar och listor med track-ID:n sparas i PostgreSQL.
-- Vad `LazyInitializationException` innebär i Hibernate.
-- Hur `@Transactional` kan användas för att hålla en databastransaktion öppen under ett test.
+- Hur integrationstester kontrollerar relationer mellan användare och mixes.
+- Hur `@Transactional` kan användas för att hantera databastransaktioner i tester.
 - Varför Hibernate behöver kunna hantera ändringsbara listor vid uppdatering av JPA-entiteter.
-- Hur man testar hela CRUD-funktionaliteten med integrationstester.
+- Hur Flyway hanterar databasmigrationer.
+- Hur Testcontainers kan användas för att testa migrationer mot en separat PostgreSQL-databas.
+- Hur man läser GitHub Actions-loggar för att hitta orsaken till misslyckade tester.
 
 ### 5. Reflektion
 
-Dagens arbete har gått bra och jag har kommit vidare med integrationstesterna för MixerLab.
+Dagens arbete har varit ganska krävande. Jag har kommit vidare med integrationstesterna och lyckats få fem tester godkända, men stötte även på problem med uppdateringsfunktionen och Flyway-migrationen.
 
-Jag har nu fått samtliga sju integrationstester godkända. Jag har även kört hela testsviten och verifierat att både unit-testerna och integrationstesterna fungerar.
+Det har varit värdefullt att undersöka GitHub Actions-loggarna och förstå skillnaden mellan de vanliga integrationstesterna och testerna som kontrollerar Flyway-migrationerna.
 
-Under arbetet fick jag lösa flera problem kopplade till Hibernate och testdata. Det har gett mig en bättre förståelse för hur JPA hanterar samlingar, relationer och uppdateringar mot databasen.
+Jag har ringat in orsaken till felen i GitHub Actions, men behöver fortsätta felsökningen nästa arbetsdag. Jag känner att det är bäst att avsluta för idag och ta mig an problemen med nya ögon nästa gång.
 
-Det känns bra att ha avslutat testningen av backendens CRUD-funktionalitet för mixes. Nästa steg blir att fortsätta arbetet med att koppla ihop frontendens MixerLab med Java-backenden.
+### Arbetstid: 09:30-17:00
 
-### Arbetstid
+09:30–10:25: Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg.
 
-09:30–10:25: Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Gick igenom föregående dags arbete och planerade det fortsatta arbetet.
-
-10:25–12:00: Fortsatte arbetet med integrationstesterna i `MixIT.java`. Testade användarrelationer, EQ-inställningar och track-ID:n samt löste ett problem med Hibernate.
+10:25–12:00: Fortsatte arbetet med integrationstesterna i `MixIT.java`. Testade användarrelationer, EQ-inställningar och track-ID:n.
 
 12:00–13:00: Lunch.
 
-Efter 13:00: Fortsatte arbetet med integrationstesterna. Implementerade tester för hämtning, uppdatering och borttagning av mixes. Felsökte problem med Hibernate och testdata, körde hela testsviten och skapade en Git-commit.
+13:00-17:00: Fortsatte med integrationstesterna och felsökte uppdateringsfunktionen. Undersökte därefter GitHub Actions-felen, Flyway-migrationen `V26__create_mixes_tables.sql` och testklassen `FlywaySchemaReconciliationIT.java`.
 
-**Effektiv arbetstid:** Uppdateras när dagens sluttid är fastställd.
+**Effektiv arbetstid:** 6 timmar och 30 minuter.
 
 ### Sammanfattning av dagen
 
 Dagen började med ett daily sprint-möte där vi gick igenom föregående dags arbete och planerade det fortsatta arbetet.
 
-Efter mötet fortsatte jag med integrationstesterna för MixerLab. Jag implementerade och testade funktionalitet för att spara, hämta, uppdatera och ta bort mixes samt kontrollerade relationer mellan användare och deras mixes.
+Efter mötet fortsatte jag med integrationstesterna för MixerLab. Fem tester är godkända, men arbetet med uppdateringstestet återstår.
 
-Under arbetet stötte jag på några problem med Hibernate och testdata som jag lyckades lösa.
+Jag undersökte även varför GitHub Actions rapporterade fel och kunde identifiera ett problem i Flyway-migrationen `V26__create_mixes_tables.sql`. Migrationen försöker ta bort en constraint som inte finns i testdatabasen.
 
-Samtliga sju integrationstester blev godkända. Jag körde även hela testsviten och fick både unit-testerna och integrationstesterna godkända.
-
-Avslutningsvis sparade jag arbetet i Git genom committen `8b67d54ae`. Backendens CRUD-funktionalitet för mixes är nu testad och klar.
+Jag har därmed ringat in problemet och vet vad jag behöver undersöka vidare nästa arbetsdag. Jag avslutade dagen efter felsökningen.
 
 --

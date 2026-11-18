@@ -309,11 +309,13 @@ Nästa steg blir att fortsätta testa hämtning av användarens egna mixes samt 
 
 ### Arbetstid
 
-09:30–10:25: Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Gick igenom föregående dags arbete och planerade det fortsatta arbetet med integrationstesterna.
+09:30–10:25: Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Gick igenom föregående dags arbete och planerade det fortsatta arbetet.
 
-10:25-12:00: Fortsatte arbetet med integrationstesterna i `MixIT.java`. Testade användarrelationer, EQ-inställningar och track-ID:n. Löste ett problem med Hibernate genom att använda `@Transactional`. Samtliga fyra genomförda integrationstester gick igenom.
+10:25–12:00: Fortsatte arbetet med integrationstesterna i `MixIT.java`. Testade användarrelationer, EQ-inställningar och track-ID:n samt löste ett problem med Hibernate.
 
-12:00-13:00: Lunch.
+12:00–13:00: Lunch.
+
+Efter 13:00: Fortsatt arbete med integrationstesterna för MixerLab.
 
 **Effektiv arbetstid:** Uppdateras när dagens sluttid är fastställd.
 

@@ -116,8 +116,8 @@ Jag är ännu inte färdig med `MixServiceTest`, utan kommer att fortsätta med 
 09:30–10:48: Sprintplaneringsmöte via videomöte med Johan Hellberg och Nisse Palm.
 10:48–12:00: Fortsatt arbete med enhetstester för `MixService`. Färdigställde grundläggande tester för CRUD-operationerna och arbetade med negativa tester.
 12:00–13:00: Lunch.
-13:00–17:00: Fortsatt arbete med `MixServiceTest`. Förbättrade testklassens struktur med `@BeforeEach` och kommentarrubriker. Implementerade och godkände ytterligare två felhanteringstester för situationer där användaren inte hittas vid skapande eller hämtning av mixes.
-15:38–16:41: Fortsatte med felhanteringstester för uppdatering och radering när användaren inte kan hittas. Båda testerna godkändes. Påbörjade tester för datarelationer och implementerade ett test med ArgumentCaptor för att kontrollera att en mix kopplas till rätt användare och att dess information följer med. Avslutade arbetet med en lyckad Git-commit.
+13:00–15:38: Fortsatt arbete med `MixServiceTest`. Förbättrade testklassens struktur med `@BeforeEach` och kommentarrubriker. Implementerade och godkände ytterligare två felhanteringstester för situationer där användaren inte hittas vid skapande eller hämtning av mixes.
+15:38–17:00: Fortsatte med felhanteringstester för uppdatering och radering när användaren inte kan hittas. Båda testerna godkändes. Påbörjade tester för datarelationer och implementerade ett test med ArgumentCaptor för att kontrollera att en mix kopplas till rätt användare och att dess information följer med. Avslutade arbetet med en lyckad Git-commit.
 
 **Effektiv arbetstid hittills:** 6 timmar och 30 minuter.
 
@@ -233,3 +233,21 @@ Därefter började jag förbereda integrationstester genom att undersöka projek
 Jag skapade `MixIT.java` och implementerade mitt första integrationstest, som gick igenom utan fel.
 
 Jag har därmed tagit nästa steg i arbetet med att kontrollera att MixerLabs mixes faktiskt sparas i databasen.
+
+--
+
+**Datum:** 18 november 2026
+
+**Veckodag:** Onsdag
+
+**Arbetsplats:** Chain of Sounds
+
+### 1. Arbetsuppgifter
+
+Dagen började med ett videomöte om den dagliga sprinten tillsammans med Johan Hellberg och Clara Westberg.
+
+Under mötet gick vi igenom vad vi hade arbetat med under föregående arbetsdag. Vi diskuterade det fortsatta arbetet med MixerLab och jag fick i uppgift att fortsätta med det pågående arbetet med integrationstesterna i Java-projektet `studio-bass-api`.
+
+### Arbetstid
+
+**09:30–10:25:** Videomöte om daglig sprint tillsammans med Johan Hellberg och Clara Westberg. Gick igenom föregående dags arbete och planerade det fortsatta arbetet med MixerLab.

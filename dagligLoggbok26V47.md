@@ -250,15 +250,21 @@ Under mötet gick vi igenom vad vi hade arbetat med föregående dag. Jag fick i
 
 Efter mötet fortsatte jag arbetet i `MixIT.java`.
 
-Jag började med att testa att en mix sparas med rätt användarrelation. Under arbetet använde jag projektets befintliga `UserRepo` och korrigerade importen för `User` till rätt paket.
-
-Därefter implementerade jag ytterligare integrationstester för att kontrollera att EQ-inställningar och track-ID:n sparas korrekt i PostgreSQL.
+Jag började med att testa att en mix sparas med rätt användarrelation. Därefter implementerade jag ytterligare integrationstester för att kontrollera att EQ-inställningar och track-ID:n sparas korrekt i PostgreSQL.
 
 Jag stötte på ett problem med Hibernate och `LazyInitializationException` när jag försökte läsa track-ID:n från databasen. Jag löste problemet genom att använda `@Transactional` på testmetoden.
 
-Samtliga fyra genomförda integrationstester gick igenom utan fel.
+Därefter fortsatte jag med testet som kontrollerar att en användare endast får tillbaka sina egna mixes.
 
-Därefter började jag arbeta med nästa test, som ska kontrollera att en användare endast får tillbaka sina egna mixes.
+Jag implementerade sedan integrationstester för att kontrollera att uppdatering och borttagning av mixes fungerar korrekt.
+
+Under testningen av uppdateringsfunktionen uppstod ett problem där Hibernate inte kunde hantera en oföränderlig lista med track-ID:n. Jag löste detta genom att använda `ArrayList` när listan tilldelas i `MixService`.
+
+Jag upptäckte även ett fel i testet för uppdatering av EQ-inställningar. Testet skickade av misstag in de ursprungliga EQ-värdena i stället för de nya. Efter att jag korrigerat detta gick testet igenom.
+
+När samtliga sju integrationstester var färdiga körde jag hela testsviten. Både unit-testerna och integrationstesterna blev godkända.
+
+Avslutningsvis skapade jag en Git-commit för arbetet med integrationstesterna.
 
 ### 2. Tekniker och verktyg
 
@@ -271,6 +277,7 @@ Därefter började jag arbeta med nästa test, som ska kontrollera att en använ
 - Docker
 - JUnit 5
 - AssertJ
+- Mockito
 - IntelliJ IDEA
 - Maven
 - Git
@@ -279,6 +286,7 @@ Därefter började jag arbeta med nästa test, som ska kontrollera att en använ
 - `MixRepository`
 - `UserRepo`
 - `@Transactional`
+- `ArrayList`
 
 ### 3. Problem och lösningar
 
@@ -288,7 +296,9 @@ Problemet berodde på att Hibernate försökte läsa en samling från databasen 
 
 Jag löste detta genom att lägga till `@Transactional` på testmetoden. Därefter gick testet igenom utan fel.
 
-Jag behövde även korrigera importen för `User` eftersom klassen ligger i paketet `com.chainofsounds.entity` och inte `com.chainofsounds.domain`.
+Ett annat problem uppstod när Hibernate försökte uppdatera en oföränderlig lista. Jag löste detta genom att skapa en ny ändringsbar `ArrayList` när track-ID:n tilldelas till mixen.
+
+Jag upptäckte även att ett av testerna skickade in fel EQ-objekt. Genom att använda de nya EQ-inställningarna i stället för de ursprungliga värdena kunde jag få testet att fungera korrekt.
 
 ### 4. Ny kunskap
 
@@ -298,14 +308,18 @@ Under dagens arbete har jag fått mer förståelse för:
 - Hur EQ-inställningar och listor med track-ID:n sparas i PostgreSQL.
 - Vad `LazyInitializationException` innebär i Hibernate.
 - Hur `@Transactional` kan användas för att hålla en databastransaktion öppen under ett test.
+- Varför Hibernate behöver kunna hantera ändringsbara listor vid uppdatering av JPA-entiteter.
+- Hur man testar hela CRUD-funktionaliteten med integrationstester.
 
 ### 5. Reflektion
 
 Dagens arbete har gått bra och jag har kommit vidare med integrationstesterna för MixerLab.
 
-Jag har nu fått fyra integrationstester godkända. Under arbetet fick jag även lösa ett problem med Hibernate och lazy loading, vilket gav mig en bättre förståelse för hur JPA hanterar data från databasen.
+Jag har nu fått samtliga sju integrationstester godkända. Jag har även kört hela testsviten och verifierat att både unit-testerna och integrationstesterna fungerar.
 
-Nästa steg blir att fortsätta testa hämtning av användarens egna mixes samt uppdatering och borttagning.
+Under arbetet fick jag lösa flera problem kopplade till Hibernate och testdata. Det har gett mig en bättre förståelse för hur JPA hanterar samlingar, relationer och uppdateringar mot databasen.
+
+Det känns bra att ha avslutat testningen av backendens CRUD-funktionalitet för mixes. Nästa steg blir att fortsätta arbetet med att koppla ihop frontendens MixerLab med Java-backenden.
 
 ### Arbetstid
 
@@ -315,7 +329,7 @@ Nästa steg blir att fortsätta testa hämtning av användarens egna mixes samt 
 
 12:00–13:00: Lunch.
 
-Efter 13:00: Fortsatt arbete med integrationstesterna för MixerLab.
+Efter 13:00: Fortsatte arbetet med integrationstesterna. Implementerade tester för hämtning, uppdatering och borttagning av mixes. Felsökte problem med Hibernate och testdata, körde hela testsviten och skapade en Git-commit.
 
 **Effektiv arbetstid:** Uppdateras när dagens sluttid är fastställd.
 
@@ -323,8 +337,12 @@ Efter 13:00: Fortsatt arbete med integrationstesterna för MixerLab.
 
 Dagen började med ett daily sprint-möte där vi gick igenom föregående dags arbete och planerade det fortsatta arbetet.
 
-Efter mötet fortsatte jag med integrationstesterna för MixerLab. Jag implementerade och körde tester för användarrelationer, EQ-inställningar och track-ID:n.
+Efter mötet fortsatte jag med integrationstesterna för MixerLab. Jag implementerade och testade funktionalitet för att spara, hämta, uppdatera och ta bort mixes samt kontrollerade relationer mellan användare och deras mixes.
 
-Under testningen stötte jag på ett problem med Hibernate som jag löste genom att använda `@Transactional`.
+Under arbetet stötte jag på några problem med Hibernate och testdata som jag lyckades lösa.
 
-Jag har hittills fått fyra integrationstester godkända och fortsätter nu med att testa att användare endast kan hämta sina egna mixes.
+Samtliga sju integrationstester blev godkända. Jag körde även hela testsviten och fick både unit-testerna och integrationstesterna godkända.
+
+Avslutningsvis sparade jag arbetet i Git genom committen `8b67d54ae`. Backendens CRUD-funktionalitet för mixes är nu testad och klar.
+
+--

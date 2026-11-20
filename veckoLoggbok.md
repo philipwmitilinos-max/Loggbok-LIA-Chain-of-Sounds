@@ -119,3 +119,5 @@ Under nästa vecka planerar jag att:
 - Undersöka hur frontend ska kommunicera med de nya Java-endpointsen.
 - Påbörja anpassningen av MixerLab i frontend så att mixes kan sparas och hämtas från databasen.
 - Fortsätta följa projektets kodstandard och arbetssätt.
+
+--

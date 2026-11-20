@@ -341,3 +341,17 @@ Jag undersökte även varför GitHub Actions rapporterade fel och kunde identifi
 Jag har därmed ringat in problemet och vet vad jag behöver undersöka vidare nästa arbetsdag. Jag avslutade dagen efter felsökningen.
 
 --
+
+**Datum:** 19 november 2026
+
+**Veckodag:** Torsdag
+
+**Arbetsplats:** Chain of Sounds
+
+### Arbetstid
+
+**Föranmäld frånvaro – hela arbetsdagen.**
+
+Jag hade tidigare under veckan informerat Johan och ansvarig på Chain of Sounds om att jag skulle vara frånvarande under torsdagen på grund av min pappas begravning och urnsättning.
+
+--

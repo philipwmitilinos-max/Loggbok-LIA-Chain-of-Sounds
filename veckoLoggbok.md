@@ -121,3 +121,89 @@ Under nästa vecka planerar jag att:
 - Fortsätta följa projektets kodstandard och arbetssätt.
 
 --
+
+# Veckovis LIA-loggbok
+
+**Vecka:** 47  
+**Datum:** 16–20 november 2026  
+**Arbetsplats:** Chain of Sounds
+
+### 1. Sammanfattning av veckan
+
+Veckan har främst handlat om att fortsätta utvecklingen av databaspersistensen för MixerLab i Java-projektet `studio-bass-api`.
+
+Veckan började med ett sprintplaneringsmöte tillsammans med Johan Hellberg och Nisse Palm. Vi gick igenom veckans prioriteringar och arbetet med MixerLab. Jag fick även klartecken från Johan att skapa en lokal databas för utvecklingsarbetet.
+
+Under måndagen fortsatte jag utveckla enhetstesterna för `MixService` med JUnit 5 och Mockito. Jag arbetade med CRUD-operationer, felhantering och användarrelationer. Jag förbättrade även testklassens struktur med `@BeforeEach` och `ArgumentCaptor`.
+
+På tisdagen slutförde jag samtliga 15 tester i `MixServiceTest`. Alla tester blev godkända. Därefter började jag arbeta med integrationstester och skapade `MixIT.java`. Mitt första integrationstest, som kontrollerar att en mix sparas i PostgreSQL, gick igenom utan fel.
+
+Under onsdagen fortsatte jag med integrationstesterna. Jag fick fem tester godkända som kontrollerar användarrelationer, EQ-inställningar, track-ID:n och hämtning av användarens mixar. Jag stötte samtidigt på problem med uppdateringsfunktionen och undersökte två misslyckade tester i GitHub Actions kopplade till Flyway-migrationen V26.
+
+Torsdagen var en föranmäld frånvarodag.
+
+På fredagen gick jag igenom Copilots kodgranskning av PR #261. Jag identifierade sex kvarstående förbättringsområden inom bland annat HTTP-tester, autentisering, validering och felhantering. Jag undersökte även databasmigrationerna och Git-branchernas historik.
+
+Jag uppdaterade CI-konfigurationen med `workflow_dispatch` för att möjliggöra manuell körning. Ändringen committades och pushades till test-branchen. Därefter försökte jag starta CI manuellt, men saknade förutsättningarna för att göra detta. Jag försökte även köra Java Backend lokalt, men PowerShell kunde inte hitta Maven.
+
+### 2. Tekniska kunskaper
+
+Under veckan har jag arbetat med och fördjupat mina kunskaper inom:
+
+- Java och Spring Boot.
+- JUnit 5 och Mockito för enhetstester.
+- Testcontainers och PostgreSQL för integrationstester.
+- Spring Data JPA och Hibernate.
+- JPA-relationer mellan entiteter.
+- `@BeforeEach`, `ArgumentCaptor` och `@Transactional`.
+- Flyway och databasmigrationer.
+- Git, branches, commits och pull requests.
+- GitHub Actions och CI-konfiguration.
+- YAML och PowerShell.
+
+Jag har framför allt fått bättre förståelse för skillnaden mellan enhetstester och integrationstester samt hur Hibernate hanterar relationer och databastransaktioner.
+
+### 3. Utmaningar och problemlösning
+
+En utmaning under veckan var att få integrationstesterna att fungera korrekt med Hibernate.
+
+Jag stötte bland annat på `LazyInitializationException` när track-ID:n skulle hämtas. Detta löstes genom att använda `@Transactional` på testmetoden.
+
+Vid testningen av uppdateringsfunktionen uppstod även ett `UnsupportedOperationException` när Hibernate försökte ändra en oföränderlig lista. Detta problem återstår att lösa.
+
+En annan större utmaning var felen i GitHub Actions. Jag undersökte testloggarna och kunde identifiera att två tester i `FlywaySchemaReconciliationIT` misslyckades på grund av V26-migrationen. Problemet åtgärdades därefter i test-branchen och markerades som löst i Copilots kodgranskning.
+
+Jag undersökte även varför GitHub Actions inte startade automatiskt för PR #261. Jag lade till `workflow_dispatch`, men kunde inte starta en manuell körning eftersom ytterligare förutsättningar på repositoryts default branch krävs.
+
+Som alternativ försökte jag köra Java Backend lokalt. Det gick inte eftersom Maven inte kunde hittas av PowerShell. Detta behöver undersökas vidare.
+
+### 4. Personlig utveckling
+
+Den här veckan har jag fått arbeta mer självständigt med testning och felsökning i ett befintligt projekt.
+
+Jag har blivit bättre på att läsa testresultat och loggar för att identifiera var problem uppstår. Jag har även fått mer erfarenhet av att arbeta med både enhetstester och integrationstester.
+
+Arbetet med Copilots kodgranskning har hjälpt mig att se implementationen ur ett bredare perspektiv. Jag har fått en tydligare bild av varför det är viktigt att inte bara kontrollera att funktionaliteten fungerar, utan även att tänka på säkerhet, felhantering, prestanda och testbarhet.
+
+Jag har också fått mer erfarenhet av Git-branchhantering och hur ändringar kan publiceras utan att påverka andra delar av projektets arbetsflöde.
+
+### 5. Reflektion och nästa vecka
+
+Jag tycker att veckan har varit lärorik och att jag har kommit vidare med MixerLabs databaspersistens.
+
+En viktig milstolpe var att slutföra de 15 enhetstesterna och därefter komma igång med integrationstesterna mot PostgreSQL. Jag har också fått en bättre förståelse för hur olika delar av backend-systemet samverkar.
+
+Det finns fortfarande några problem att lösa innan arbetet kan betraktas som färdigt. Framför allt behöver jag fortsätta med uppdateringsfunktionen, förbättra testerna enligt Copilots granskning och säkerställa att databasmigrationerna fungerar korrekt.
+
+**Fokus inför nästa vecka:**
+
+- Lösa problemet med uppdatering av track-ID:n.
+- Fortsätta utveckla och förbättra integrationstesterna.
+- Åtgärda de sex kvarstående förbättringsområdena från Copilots kodgranskning.
+- Verifiera V26-migrationen genom en ny CI-körning.
+- Få Maven att fungera lokalt så att Java Backend kan testas.
+- Fortsätta arbetet enligt den planerade Git-branchstrukturen.
+
+**Sammanfattningsvis** har veckan inneburit stora framsteg inom testning och databaspersistens, men även en del felsökning kring Hibernate, Flyway och CI. Jag har fått en bättre förståelse för hur man utvecklar, testar och kvalitetssäkrar funktionalitet i ett större Java-projekt.
+
+--

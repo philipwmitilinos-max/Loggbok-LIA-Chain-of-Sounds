@@ -356,161 +356,100 @@ Jag hade tidigare under veckan informerat Johan och ansvarig på Chain of Sounds
 
 --
 
-**Datum:** 2026-11-20  
-**Veckodag:** Fredag  
+**Datum:** 20 november 2026
+
+**Veckodag:** Fredag
+
 **Arbetsplats:** Chain of Sounds
 
-## 1. Arbetsuppgifter
+### 1. Arbetsuppgifter
 
-Fortsatte arbetet med MixerLab och databaspersisteringen i Java-projektet `studio-bass-api`.
+Fortsatte arbetet med MixerLab och databaspersistensen i Java-projektet `studio-bass-api`.
 
-### Granskning av Copilots kodgranskning – PR #261
+Började dagen med att gå igenom Copilots kodgranskning av PR #261, som JohanCodeForFun hade bett om. Granskningen innehöll sju identifierade förbättringsområden. Problemet med V26-migrationen hade åtgärdats och markerats som löst. De återstående sex punkterna handlar främst om HTTP-tester, autentisering, validering av `trackIds`, N+1-frågor, felhantering och förbättrade integrationstester.
 
-Gick igenom Copilots kodgranskning av pull request #261, som JohanCodeForFun hade bett om.
+Jag fortsatte även undersöka databasmigrationerna V11–V24 för att kontrollera om någon tidigare migration skapar tabellerna `mixes` eller `mix_tracks`. Jag kunde bekräfta att ingen av migrationerna V1–V25 skapar dessa tabeller.
 
-Granskningen innehöll sju identifierade förbättringsområden. Den allvarliga anmärkningen kring V26-migrationen hade åtgärdats och markerats som löst i granskningen. Övriga kommentarer pekade på förbättringar som behöver undersökas och eventuellt implementeras.
+Därefter undersökte jag Git-historiken mellan feature-branchen och test-branchen. Jag identifierade nio lokala commits på feature-branchen som ännu inte hade pushats till GitHub. Jag kontrollerade även att test-branchen var synkad med GitHub och att Draft PR #261 behöll sin befintliga målbranch.
 
-De kvarstående förbättringsområdena är:
+Jag undersökte varför GitHub Actions inte startade automatiskt för den senaste committen. Jag upptäckte att CI-workflowen endast triggas automatiskt för pull requests mot `dev` och `main`.
 
-1. **Tester av controllerns HTTP-beteende**  
-   Komplettera testerna med HTTP-anrop för att kontrollera att endpoints fungerar korrekt, inklusive JWT-hantering, validering, svarskoder och serialisering av svar.
+För att möjliggöra manuell körning lade jag till `workflow_dispatch` i `.github/workflows/ci.yml`. Ändringen granskades, committades och pushades till test-branchen.
 
-2. **Hantering av anonyma användare**  
-   Undersöka hur `GET /mixes` hanterar anonyma anrop i utvecklingskonfigurationen. Ett anrop utan JWT riskerar att orsaka ett `NullPointerException` och resultera i HTTP 500. Undersöka lämplig autentiseringskontroll och lägga till ett test för detta scenario.
+Jag försökte därefter starta CI manuellt via GitHub Actions, men knappen Run workflow visades inte. Det visade sig att workflow-filen även behöver finnas på repositoryts default branch. Eftersom jag saknar behörighet till repositoryts inställningar kunde jag inte undersöka detta vidare.
 
-3. **Validering av `trackIds`**  
-   Säkerställa att `trackIds` inte kan vara `null` när en mix skapas eller uppdateras. Komplettera DTO-valideringen och kontrollera att valideringen används i controllern.
+Som alternativ försökte jag köra Java Backend lokalt med Maven. PowerShell kunde dock inte hitta Maven-installationen, vilket gjorde att någon lokal testkörning inte kunde genomföras.
 
-4. **Förbättra databasfrågor för trackIds**  
-   Undersöka risken för N+1-frågor när användarens mixar hämtas. Copilot föreslog att använda `@EntityGraph` för att hämta relaterade `trackIds` mer effektivt.
+### 2. Tekniker och verktyg
 
-5. **Korrekt felhantering för mixar som inte hittas**  
-   Ersätta generella `RuntimeException`-fel med en mer specifik undantagshantering, så att mixar som saknas eller tillhör en annan användare returnerar HTTP 404 i stället för HTTP 500.
+- Java och Spring Boot
+- Maven
+- Flyway och SQL-migrationer
+- PostgreSQL
+- JPA och Hibernate
+- Git och GitHub
+- GitHub Actions och CI
+- YAML
+- PowerShell
+- IntelliJ IDEA
 
-6. **Förbättra integrationstesterna**  
-   Säkerställa att testerna verkligen verifierar data som har sparats i databasen. Copilot föreslog att använda `EntityManager` med `flush()` och `clear()` för att undvika att testerna enbart läser från den befintliga persistence context.
+### 3. Problem och lösningar
 
-### Granskning av databasmigrationer
+Under dagen undersökte jag varför GitHub Actions inte startade automatiskt. Jag upptäckte att workflowens branchfilter endast omfattar pull requests mot `dev` och `main`.
 
-- Gick igenom databasmigrationerna V11–V24 för att undersöka om någon tidigare migration skapade tabellerna `mixes` eller `mix_tracks`.
-- Konstaterade att V19 innehåller MixerLab-relaterad utrustningsinformation i `instrument_components`.
-- Hittade ingen tidigare migration bland V1–V25 som skapar själva tabellerna för sparade mixar.
-- Sammanställde migrationshistoriken inför fortsatt utredning av V26.
-- Undersökte tidigare GitHub Actions-fel kopplade till V26 och en foreign key constraint som inte fanns i databasen.
+Jag lade till `workflow_dispatch` för att möjliggöra manuell körning. Ändringen committades och pushades till test-branchen med commit `8042acb6f`. Den manuella körningen kunde dock inte startas eftersom workflow-filen även behöver finnas på default branch.
 
-### Git och branchhantering
+Jag försökte därefter köra Java Backend lokalt, men PowerShell kunde inte hitta Maven. Jag behöver därför kontrollera om Maven fortfarande är installerat eller om PATH-konfigurationen behöver rättas till.
 
-- Undersökte skillnaderna mellan `feature/mixerlab-database-persistence-java` och `test/mixerlab-database-persistence-java-test`.
-- Identifierade nio lokala commits på feature-branchen som ännu inte hade pushats till GitHub.
-- Kontrollerade att test-branchen innehåller implementationen samt ytterligare tester och ändringar i V26.
-- Bekräftade att test-branchen är synkad med GitHub och att arbetskatalogen är ren.
-- Bytte tillbaka till test-branchen för att fortsätta arbetet där.
-- Säkerställde att Draft PR #261 behålls med feature-branchen som mål.
-- Ingen push eller merge genomfördes.
+Jag granskade även tidigare databasmigrationer och bekräftade att ingen migration bland V1–V25 skapar MixerLab-tabellerna.
 
-### GitHub Actions och CI
+### 4. Ny kunskap
 
-- Undersökte varför GitHub Actions inte körde en ny build på den senaste committen.
-- Gick igenom CI-workflowens konfiguration och upptäckte att automatiska PR-körningar är begränsade till pull requests mot `dev` och `main`.
-- Diskuterade möjligheten att ändra PR:ens mål till `dev`, men beslutade att först undersöka andra alternativ för att behålla den planerade branch-strukturen.
-- Identifierade `workflow_dispatch` som ett möjligt alternativ för att starta en manuell körning.
+Under dagen har jag fått mer förståelse för:
 
-## 2. Tekniker och verktyg
+- Hur Git jämför lokala och publicerade branches.
+- Hur `git log`, `git diff` och `git rev-list` används för att undersöka Git-historik.
+- Hur GitHub Actions använder branchfilter för automatiska körningar.
+- Hur `workflow_dispatch` används för att starta workflows manuellt.
+- Hur Flyway hanterar databasmigrationer och befintliga tabeller.
+- Hur kodgranskning kan identifiera förbättringar inom testning, säkerhet och felhantering.
 
-- Java och Spring Boot.
-- Flyway och SQL-migrationer.
-- PostgreSQL.
-- JPA och Hibernate.
-- Git och GitHub.
-- Git branches och pull requests.
-- GitHub Actions och CI.
-- IntelliJ IDEA och terminalen.
+### 5. Reflektion
 
-## 3. Problem och lösningar
+Dagens arbete har till stor del handlat om att granska implementationen av MixerLab och undersöka problem kring databasmigrationer och CI.
 
-### Problem: V26 och tidigare databasmigrationer
+Copilots kodgranskning gav mig en tydligare bild av vilka delar som behöver förbättras innan implementationen kan betraktas som färdig.
 
-Det fanns osäkerhet kring hur V26 fungerade tillsammans med tidigare databasmigrationer och varför en constraint saknades vid en tidigare CI-körning.
+Jag lyckades även uppdatera CI-konfigurationen och publicera ändringen på test-branchen. Däremot kunde jag inte starta en manuell CI-körning på grund av repositoryts inställningar och mina behörigheter.
 
-**Åtgärd och resultat:**
-- Granskade migrationerna V11–V24.
-- Bekräftade att ingen migration bland V1–V25 skapar tabellerna `mixes` eller `mix_tracks`.
-- V26 hade ändrats på test-branchen för att åtgärda problemet med den saknade constrainten.
+Försöket att köra testerna lokalt visade också att Maven behöver kontrolleras innan jag kan fortsätta verifieringen.
 
-V26 behöver fortfarande verifieras i en ny CI-körning.
+Nästa steg blir att åtgärda förbättringspunkterna från Copilots granskning och få igång testningen igen.
 
-### Problem: GitHub Actions körde inte på senaste committen
+### Arbetstid: 09:30–17:00
 
-Undersökte varför ingen ny automatisk build startades.
+09:30–09:40: Kort videomöte. Ett ytterligare möte planerades till kl. 13:00.
 
-**Resultat:**
-CI-workflowens branchfilter omfattar endast pull requests mot `dev` och `main`. Eftersom PR #261 har feature-branchen som mål startar ingen automatisk körning enligt den nuvarande konfigurationen.
+09:40–12:15: Granskade Copilots kommentarer på PR #261, databasmigrationerna och skillnaderna mellan Git-brancherna.
 
-**Fortsatt undersökning:**
-Möjligheten att använda `workflow_dispatch` för att starta en manuell körning ska undersökas vidare.
+12:15–12:45: Lunch.
 
-### Problem: Skillnader mellan lokala och publicerade Git-brancher
+12:45–13:00: Fortsatte undersöka GitHub Actions och CI-konfigurationen.
 
-Undersökte varför feature-branchen hade commits som inte var publicerade på GitHub.
+13:00–13:20: Videomöte med Clara. Gick igenom veckans arbete.
 
-**Resultat:**
-- Identifierade nio lokala commits som ännu inte hade pushats.
-- Kontrollerade att implementationen finns kvar i branchhistoriken.
-- Verifierade att test-branchen är synkad med GitHub och har en ren arbetskatalog.
+13:20–17:00: Uppdaterade CI-konfigurationen med `workflow_dispatch`, skapade commit och pushade till test-branchen. Försökte starta CI manuellt och undersökte därefter möjligheten att köra Java Backend lokalt. Identifierade att Maven inte kunde hittas.
 
-Ingen push eller merge genomfördes. Den befintliga branch-strukturen och Draft PR #261 behölls.
+**Effektiv arbetstid:** 6 timmar och 30 minuter.
 
-## 4. Ny kunskap
+### Sammanfattning av dagen
 
-- Fick bättre förståelse för hur Git jämför lokala branches med publicerade branches.
-- Använde `git log`, `git diff` och `git rev-list` för att undersöka skillnader i commit-historik och filinnehåll.
-- Fördjupade förståelsen för hur GitHub Actions använder branchfilter för pull requests.
-- Fick bättre förståelse för hur Flyway-migrationer påverkar befintliga databastabeller.
-- Fördjupade förståelsen för varför `CREATE TABLE IF NOT EXISTS` inte automatiskt anpassar en redan existerande tabell.
-- Fick en tydligare bild av hur kodgranskning kan användas för att identifiera förbättringar inom säkerhet, validering, felhantering och testning.
+Dagen ägnades åt att granska Copilots kodgranskning av PR #261, undersöka databasmigrationerna och kontrollera Git-branchernas historik.
 
-## 5. Förbättringsområden och fortsatt arbete
+Jag identifierade sex kvarstående förbättringsområden i implementationen och bekräftade att ingen tidigare migration bland V1–V25 skapar tabellerna `mixes` eller `mix_tracks`.
 
-Följande punkter behöver undersökas och hanteras efter Copilots granskning:
+Jag uppdaterade även CI-konfigurationen med `workflow_dispatch` och pushade ändringen till test-branchen. Det gick dock inte att starta CI manuellt eftersom ytterligare inställningar på repositoryts default branch krävs.
 
-- [ ] Komplettera med HTTP-/controllerintegrationstester.
-- [ ] Förbättra hanteringen av anonyma anrop till `/mixes`.
-- [ ] Lägga till validering för `trackIds` så att `null` inte orsakar serverfel.
-- [ ] Undersöka och optimera hämtningen av `trackIds` för att undvika N+1-frågor.
-- [ ] Införa tydligare felhantering för mixar som inte hittas eller inte tillhör användaren.
-- [ ] Förbättra integrationstesterna med `flush()` och `clear()` för att verifiera faktisk databaspersistens.
-- [ ] Verifiera den uppdaterade V26-migrationen genom en ny CI-körning.
-- [ ] Undersöka möjligheten att starta GitHub Actions manuellt med `workflow_dispatch`.
+Slutligen försökte jag köra Java Backend lokalt, men upptäckte att Maven inte kunde hittas av PowerShell.
 
-**Status:** Copilots kommentarer har granskats. V26-problemet har åtgärdats och markerats som löst i granskningen. Övriga förbättringar är identifierade men inte verifierade som genomförda.
-
-## 6. Reflektion
-
-Dagen har till stor del handlat om att granska den befintliga implementationen av MixerLab och undersöka hur databasmigrationerna fungerar tillsammans med projektets Git- och CI-struktur.
-
-Copilots kodgranskning gav en tydligare bild av vilka delar som behöver förbättras innan implementationen kan betraktas som färdig. Framför allt handlar det om att komplettera testerna, förbättra felhanteringen och säkerställa att autentisering och validering fungerar korrekt.
-
-Det var också viktigt att gå igenom tidigare migrationer innan ytterligare ändringar görs i V26. Jag har dessutom fått bättre förståelse för hur lokala commits, publicerade branches och pull requests hänger ihop.
-
-Jag valde att inte ändra PR:ens mål till `dev`, eftersom jag vill behålla den planerade arbetsgången där test-branchen först granskas mot feature-branchen.
-
-## 7. Arbetstid
-
-- **09:30–09:40:** Kort videomöte. Ett ytterligare möte planerades till kl. 13:00.
-- **09:40–12:15:** Arbete med Copilots kodgranskning av PR #261, databasmigrationer, Git-brancher och undersökning av tidigare CI-fel.
-- **12:15–12:45:** Lunch.
-- **12:45–13:00:** Fortsatt arbete med GitHub Actions och CI-konfigurationen.
-- **13:00–13:20:** Videomöte med Clara. Vi gick igenom veckans arbete och vad som hade genomförts.
-- **13:20–:** Fortsatt arbetsdag. Aktiviteter efter kl. 13:20 har ännu inte dokumenterats.
-
-## 8. Sammanfattning av dagen
-
-Under dagen granskade jag Copilots kommentarer på PR #261 och identifierade sex kvarstående förbättringsområden inom tester, autentisering, validering, databasfrågor och felhantering. Problemet som Copilot hade identifierat i V26-migrationen hade åtgärdats och markerats som löst.
-
-Jag gick även igenom databasmigrationerna V11–V24 och bekräftade att ingen tidigare migration bland V1–V25 skapar tabellerna `mixes` eller `mix_tracks`.
-
-Jag undersökte Git-historiken mellan feature- och test-branchen, identifierade nio lokala commits som ännu inte hade publicerats och bekräftade att test-branchen är synkad med GitHub.
-
-Slutligen undersökte jag varför GitHub Actions inte kör automatiskt på den senaste committen och identifierade att CI-workflowens branchfilter är begränsat till pull requests mot `dev` och `main`.
-
-Draft PR #261 och den planerade branch-strukturen behölls utan någon ny push eller merge.
+Draft PR #261 och den planerade branch-strukturen behölls.

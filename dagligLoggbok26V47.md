@@ -355,3 +355,94 @@ Jag har därmed ringat in problemet och vet vad jag behöver undersöka vidare n
 Jag hade tidigare under veckan informerat Johan och ansvarig på Chain of Sounds om att jag skulle vara frånvarande under torsdagen på grund av min pappas begravning och urnsättning.
 
 --
+
+**Datum:** 2026-11-20  
+**Veckodag:** Fredag  
+**Arbetsplats:** Chain of Sounds
+
+## 1. Arbetsuppgifter
+
+Fortsatte arbetet med MixerLab och databaspersisteringen i Java-projektet `studio-bass-api`.
+
+**Granskning av databasmigrationer**
+- Gick igenom databasmigrationerna V11–V24 för att undersöka om någon tidigare migration skapade tabellerna `mixes` eller `mix_tracks`.
+- Konstaterade att V19 innehåller MixerLab-relaterad utrustningsinformation i `instrument_components`.
+- Kunde inte hitta någon tidigare migration som skapar själva tabellerna för sparade mixer.
+- Sammanställde migrationshistoriken V1–V25 inför fortsatt utredning av V26.
+
+**Git och branchhantering**
+- Undersökte skillnaderna mellan `feature/mixerlab-database-persistence-java` och `test/mixerlab-database-persistence-java-test`.
+- Identifierade nio lokala commits på feature-branchen som ännu inte har pushats till GitHub.
+- Kontrollerade att test-branchen innehåller implementationen samt ytterligare tester och ändringar av V26.
+- Bekräftade att test-branchen är synkad med GitHub och att arbetskatalogen är ren.
+- Bytte tillbaka till test-branchen för att fortsätta arbetet där.
+- Säkerställde att Draft PR #261 behålls med feature-branchen som mål.
+
+**GitHub Actions och CI**
+- Undersökte varför GitHub Actions inte körde en ny build på den senaste committen.
+- Gick igenom CI-workflowens konfiguration och upptäckte att automatiska PR-körningar är begränsade till pull requests mot `dev` och `main`.
+- Diskuterade möjligheten att ändra PR:ens mål till `dev`, men beslutade att först undersöka andra alternativ så att den planerade branch-strukturen inte påverkas.
+
+## 2. Tekniker och verktyg
+
+- Java och Spring Boot.
+- Flyway och SQL-migrationer.
+- PostgreSQL.
+- Git och GitHub.
+- Git branches och pull requests.
+- GitHub Actions och CI.
+- IntelliJ IDEA och terminalen.
+
+## 3. Problem och lösningar
+
+**Problem: GitHub Actions körde inte på senaste committen.**
+
+Undersökte CI-konfigurationen och upptäckte att workflowen endast triggas automatiskt för pull requests mot `dev` och `main`.
+
+**Fortsatt undersökning:** Möjligheten att använda `workflow_dispatch` för att starta en manuell körning ska undersökas vidare.
+
+**Problem: Feature-branchen hade commits som inte var publicerade på GitHub.**
+
+Undersökte branchernas historik och jämförde deras innehåll. Bekräftade att de nio lokala implementation-commitsen finns kvar och att test-branchen är synkad med GitHub.
+
+**Resultat:** Ingen push eller merge genomfördes. Den befintliga branch-strukturen och Draft PR #261 behölls.
+
+**Problem: Osäkerhet kring V26 och tidigare databasmigrationer.**
+
+Granskade V11–V24 för att undersöka om tidigare migrationer kunde påverka skapandet av MixerLab-tabellerna.
+
+**Resultat:** Ingen tidigare migration bland V1–V25 skapar `mixes` eller `mix_tracks`. V26 behöver därför fortsatt undersökas med hänsyn till både nya och befintliga databaser.
+
+## 4. Ny kunskap
+
+- Fick bättre förståelse för hur Git jämför lokala branches och publicerade branches.
+- Använde `git log`, `git diff` och `git rev-list` för att undersöka skillnader i commit-historik och filinnehåll.
+- Fördjupade förståelsen för hur GitHub Actions använder branchfilter för pull requests.
+- Fick bättre förståelse för hur Flyway-migrationer påverkar befintliga databastabeller och varför `CREATE TABLE IF NOT EXISTS` inte automatiskt anpassar en redan existerande tabell.
+
+## 5. Reflektion
+
+Dagen har till stor del handlat om att undersöka databasmigrationerna och säkerställa att Git- och branchhanteringen fungerar som planerat.
+
+Det var viktigt att gå igenom tidigare migrationer innan ytterligare ändringar görs i V26. Jag har också fått bättre förståelse för hur lokala commits, publicerade branches och pull requests hänger ihop.
+
+Jag valde att inte ändra PR:ens mål till `dev`, eftersom jag vill behålla den planerade arbetsgången där test-branchen först granskas mot feature-branchen.
+
+## Arbetstid
+
+- **09:30–09:40:** Kort videomöte. Ett ytterligare möte planerades till kl. 13:00.
+- **09:40–12:15:** Arbete med databasmigrationer, Git-brancher och undersökning av GitHub Actions.
+- **12:15–12:45:** Lunch.
+- **12:45–13:00:** Fortsatt arbete med projektet.
+- **13:00–13:20:** Videomöte med Clara. Vi gick igenom vad vi har arbetat med under veckan.
+- **13:20–:** Fortsatt arbetsdag. Aktiviteter efter kl. 13:20 har ännu inte dokumenterats.
+
+## Sammanfattning av dagen
+
+Har granskat databasmigrationerna V11–V24 och bekräftat att ingen tidigare migration bland V1–V25 skapar tabellerna `mixes` eller `mix_tracks`.
+
+Har även undersökt Git-historiken mellan feature- och test-branchen, säkerställt att mina nio lokala commits finns kvar och bekräftat att test-branchen är synkad med GitHub.
+
+Har undersökt varför GitHub Actions inte kör automatiskt på den senaste committen och identifierat att CI-workflowens branchfilter är begränsat till `dev` och `main`.
+
+Dagen har också innehållit ett kort videomöte samt ett veckouppföljningsmöte med Clara.

@@ -18,9 +18,18 @@
   - MixServiceTest: 15/15.
   - MixIT: 7/7.
   - FlywaySchemaReconciliationIT: 2/2.
-- Pushade feature-branchen till GitHub.
-- Skapade en ny Pull Request, #265, från feature-branchen till `dev`.
-- Kontrollerade GitHub Actions-resultatet. Samtliga sju automatiserade kontroller passerade.
+- Hela Maven-bygget avslutades med `BUILD SUCCESS`.
+- Kontrollerade att arbetskatalogen var ren innan push.
+- Pushade feature-branchen till GitHub. Totalt 24 commits publicerades.
+- Skapade en ny Pull Request, #265, från `feature/mixerlab-database-persistence-java` till `dev`.
+- Kontrollerade GitHub Actions-resultatet. Samtliga sju automatiserade kontroller passerade:
+  - CI / .NET Backend.
+  - CI / Java Backend (Maven).
+  - CI / React Frontend.
+  - CodeQL – C#.
+  - CodeQL – Java/Kotlin.
+  - CodeQL – JavaScript/TypeScript.
+  - Playwright Tests.
 
 ## 2. Tekniker och verktyg
 
@@ -28,12 +37,14 @@
 - Git-brancher, merge och commits.
 - Pull Requests och kodgranskning.
 - GitHub Actions.
+- CI/CD och automatiserade tester.
 - Java och Spring Boot.
 - Maven Wrapper.
 - JUnit 5 och Mockito.
 - Testcontainers och PostgreSQL.
 - Flyway.
-- CI/CD och automatiserade tester.
+- React och Playwright.
+- PowerShell och terminalkommandon.
 
 ## 3. Problem och lösningar
 
@@ -41,13 +52,15 @@
 - Feature-branchen innehöll nio lokala commits som inte hade pushats till GitHub. Dessa behölls och kombinerades med ändringarna från test-branchen.
 - Mergen genomfördes automatiskt utan konflikter.
 - Maven kunde inte köras direkt via `mvn`, men projektet innehöll Maven Wrapper. Därför användes `mvnw.cmd` för att genomföra verifieringen.
-- GitHub PR #265 visar att minst två godkända granskningar från personer med skrivbehörighet krävs innan merge. Detta är ett krav i repositoryts inställningar, inte ett testfel.
+- När jag skulle lägga till ändringen i `.github/workflows/ci.yml` uppstod ett sökvägsfel eftersom jag befann mig i `studio-bass-api`. Problemet löstes genom att använda den relativa sökvägen `../.github/workflows/ci.yml`.
+- GitHub PR #265 visar att minst två godkända granskningar från personer med skrivbehörighet krävs innan merge. Detta är ett krav i repositoryts inställningar och inte ett testfel.
 
 ## 4. Ny kunskap
 
 - Fördjupad förståelse för hur man jämför brancher och kontrollerar skillnader mellan commits.
 - Hur man genomför en merge utan att omedelbart skapa en merge-commit med `--no-commit --no-ff`.
 - Hur Maven Wrapper kan användas för att bygga och testa ett projekt utan en separat Maven-installation.
+- Hur man använder relativa sökvägar i Git-kommandon när man befinner sig i en undermapp.
 - Hur GitHub Actions automatiskt verifierar flera delar av ett projekt genom CI.
 - Förståelse för hur granskningskrav och behörigheter påverkar möjligheten att merga en Pull Request.
 
@@ -59,13 +72,17 @@ Det var särskilt positivt att samtliga relevanta backend-tester passerade och a
 
 Den nya Pull Requesten #265 är nu öppen mot `dev`. Arbetet är fortfarande pågående eftersom frontend-integrationen och verifieringen av att sparade mixes finns kvar efter refresh och när applikationen öppnas igen återstår.
 
+Nästa steg är att invänta kodgranskning och fortsätta med frontend-integrationen.
+
 ## Arbetstid
 
 - 09:30–11:00 – Sprintplanering.
 - 11:00–11:15 – Individuell handledning med Johan.
-- 11:15–12:45 – Git-arbete, merge, backend-verifiering och skapande av ny Pull Request.
+- 11:15–12:15 – Git-arbete, branchkontroller, merge och CI-konfiguration.
+- 12:45–13:45 – Lunch.
+- 13:45–pågående – Backend-verifiering, testkontroller, push till GitHub och skapande av Pull Request #265.
 
-**Arbetstid:** Sluttid och lunchrast återstår att dokumentera.
+**Arbetstid:** Sluttid återstår att dokumentera.
 
 ## Sammanfattning av dagen
 
@@ -73,7 +90,7 @@ Under dagen genomfördes en viktig del av arbetet med MixerLab-databaspersistens
 
 Feature-branchen pushades till GitHub och en ny Pull Request, #265, skapades mot `dev`. Samtliga sju GitHub Actions-kontroller passerade.
 
-Nästa steg är att invänta kodgranskning och fortsätta med frontend-integrationen.
+Den nya Pull Requesten inväntar nu kodgranskning. Nästa steg är att fortsätta med frontend-integrationen och verifiera att användarnas mixes sparas permanent.
 
 ### Backend – studio-bass-api
 

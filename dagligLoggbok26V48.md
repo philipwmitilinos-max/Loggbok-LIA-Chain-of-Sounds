@@ -223,25 +223,42 @@ Steg 4 – Frontend
 
 - Deltog i ett kort daily Scrum-möte via videolänk tillsammans med Johan Hellberg och Clara Westberg.
 - Under mötet diskuterades dagens arbete och planeringen framåt.
-- Beslutet för dagens fortsatta arbete är att fortsätta med MixerLab och arbetet med databaspersistens i Java-backend.
+- Fortsatte arbetet med MixerLab och databaspersistens i Java-backend.
+- Fortsatte granskningen av Copilots tidigare kodgranskningsanmärkningar från PR #261.
+- Undersökte databasmigrationen V26 och dess hantering av befintliga databasscheman.
+- Granskade historiken för V26 och jämförde den ursprungliga migrationen med den korrigerade versionen.
+- Undersökte om det fanns någon äldre databas eller tidigare migration som skapade tabellerna `mixes` och `mix_tracks`.
+- Konstaterade att det inte finns någon gammal databas som behöver stödjas i projektets nuvarande situation. Därför behövs inte de tidigare `ALTER TABLE`-instruktionerna för att hantera ett äldre schema.
+- Skapade och körde ett separat migrationstest, `MixFlywayMigrationIT`, med Testcontainers och PostgreSQL. Testet verifierade att V26 skapar tabellerna `mixes` och `mix_tracks` samt deras främmande nycklar.
+- Påbörjade arbetet med `MixControllerTest` för att komplettera testtäckningen av MixController.
+- Implementerade och körde testet `createMix()`, som verifierades fungera.
+- Påbörjade testet `getUserMixes()` för att kontrollera att API:et hämtar och returnerar användarens sparade mixes.
 
-**Planerade arbetsuppgifter för dagen:**
+**Genomförda och verifierade moment:**
+- V26:s migrationstest: 1 test, 0 fel, 0 misslyckade tester.
+- `createMix()` i `MixControllerTest`: testet gick igenom.
+- Slutsatsen att projektet inte behöver hantera någon äldre databas för MixerLab-migrationen.
 
-- Fortsätta undersöka Copilots tidigare kodgranskningsanmärkningar från PR #261.
-- Fortsätta granskningen av databasmigrationen V26.
-- Undersöka hur V26 hanterar äldre databasscheman där tabellerna redan finns.
-- Vid behov komplettera `MixFlywayMigrationIT` med ytterligare migrationsscenarier.
-- Fortsätta granska och verifiera återstående förbättringspunkter från Copilot.
-- Kontrollera den senaste lokala commiten `16b1cced0` och förbereda eventuell push till GitHub.
-- Fortsätta kvalitetssäkra backend-implementationen inför den fortsatta frontend-integrationen.
+**Påbörjat arbete:**
+- `getUserMixes()` i `MixControllerTest`.
+- Fortsatt granskning av Copilots tidigare kodgranskningsanmärkningar.
+
+**Återstår att verifiera:**
+- Resultatet av `getUserMixes()`-testet.
+- Övriga tester för `updateMix()` och `deleteMix()`.
+- Om den senaste lokala commiten `16b1cced0` ska pushas till GitHub.
 
 ## 2. Tekniker och verktyg
 
 - Java och Spring Boot.
+- Spring MVC och Spring Security.
 - Git och GitHub.
 - Pull Requests och kodgranskning.
 - Maven Wrapper.
 - JUnit 5.
+- Mockito.
+- MockMvc.
+- Spring Security Test och JWT-testning.
 - Testcontainers och PostgreSQL.
 - Flyway och SQL-migrationer.
 - Hibernate och JPA.
@@ -251,33 +268,61 @@ Steg 4 – Frontend
 
 ## 3. Problem och lösningar
 
-Inga nya problem eller lösningar dokumenterade ännu.
+**Granskning av V26-migrationen**
 
-Dagens fortsatta arbete kommer bland annat att undersöka hur Flyway-migrationen V26 fungerar med äldre databasscheman.
+Copilots tidigare kodgranskning hade uppmärksammat problem med SQL-instruktioner som försökte ändra och ta bort befintliga constraints samt byta namn på en kolumn.
+
+Genom att granska migrationens Git-historik och tidigare versioner kunde jag identifiera vilka instruktioner som hade funnits från början.
+
+Jag undersökte även om någon tidigare migration skapade tabellerna `mixes` och `mix_tracks`. Det visade sig att det inte finns någon sådan äldre migration och att projektet inte har någon gammal databas som behöver stödjas.
+
+**Lösning:**
+De överflödiga `ALTER TABLE`-instruktionerna behövs inte för projektets nuvarande förutsättningar. Den korrigerade V26-migrationen behåller därför skapandet av tabellerna och deras constraints utan de tidigare ändringsinstruktionerna.
+
+För att verifiera lösningen skapade jag `MixFlywayMigrationIT`, som testar migrationen mot en separat PostgreSQL-container. Testet genomfördes utan fel.
+
+**Testning av MixController**
+
+Det saknades tidigare tester för controllerns HTTP-endpoints. Jag började därför skapa `MixControllerTest` med MockMvc och Mockito.
+
+Under arbetet uppstod ett importfel där fel `MediaType` hade importerats från JUnit i stället för Spring.
+
+**Lösning:**
+Bytte till `org.springframework.http.MediaType`. Därefter kunde `createMix()`-testet köras och gick igenom.
+
+Arbetet med resterande controller-tester fortsätter.
 
 ## 4. Ny kunskap
 
-Kompletteras under dagen utifrån nya kunskaper och erfarenheter från arbetet med MixerLab, databasmigrationer och kodgranskning.
+- Fördjupad förståelse för hur Flyway hanterar databasmigrationer och varför migrationer behöver anpassas efter projektets faktiska databashistorik.
+- Lärt mig att använda Git-historik för att jämföra tidigare och nuvarande versioner av SQL-migrationer.
+- Fördjupad förståelse för hur Testcontainers kan användas för att testa databasmigrationer mot en riktig PostgreSQL-instans i en isolerad testmiljö.
+- Arbetat vidare med MockMvc för att testa HTTP-anrop till Spring Boot-controllers.
+- Fördjupat kunskapen om hur Mockito används för att mocka serviceklasser och verifiera att rätt metod anropas med rätt argument.
+- Fått mer erfarenhet av att testa JWT-autentisering i controller-tester med Spring Security Test.
 
 ## 5. Reflektion
 
-Dagen inleddes med ett kort daily Scrum-möte där dagens arbete planerades tillsammans med Johan Hellberg och Clara Westberg.
+Dagen har framför allt handlat om kvalitetssäkring av MixerLabs Java-backend.
 
-Fokus för dagen är att fortsätta utvecklingen av MixerLab och kvalitetssäkra Java-backendens databaspersistens. Arbetet fortsätter där föregående arbetsdag avslutades, med särskilt fokus på Copilots tidigare kodgranskningsanmärkningar och verifiering av databasmigrationen V26.
+En viktig del av arbetet var att undersöka Copilots tidigare anmärkning kring V26-migrationen. Genom att granska Git-historiken och kontrollera projektets faktiska förutsättningar kunde jag avgöra att det inte finns någon äldre databas som behöver stödjas. Jag kunde därefter verifiera den korrigerade migrationen med ett separat integrationstest mot PostgreSQL.
 
-Loggboken kompletteras under dagen med genomförda arbetsuppgifter, eventuella problem, lösningar och nya kunskaper.
+Jag har även påbörjat arbetet med att komplettera testtäckningen för MixController. Det första testet, `createMix()`, fungerar och är verifierat. Nästa steg är att fortsätta med `getUserMixes()` och därefter testa uppdatering och borttagning av mixes.
+
+Arbetet har gett mig bättre förståelse för hur viktigt det är att kombinera kodgranskning med tester som verifierar den faktiska funktionaliteten.
 
 ## Arbetstid
 
 - 09:30–09:45 – Daily Scrum via videomöte med Johan Hellberg och Clara Westberg.
-- 09:45–pågående – Fortsatt arbete med MixerLab och databaspersistens i Java-backend.
+- 09:45–pågående – Fortsatt arbete med MixerLab, databasmigrationer, kodgranskning och controller-tester.
 
 **Sluttid:** Återstår att dokumentera.
 
 ## Sammanfattning av dagen
 
-Dagen inleddes med ett daily Scrum-möte där dagens arbete planerades. Fokus ligger på att fortsätta arbetet med MixerLab, framför allt kvalitetssäkring av Java-backendens databaspersistens och granskning av tidigare kodgranskningsanmärkningar.
+Dagen inleddes med ett daily Scrum-möte tillsammans med Johan Hellberg och Clara Westberg. Därefter fortsatte arbetet med MixerLab och kvalitetssäkring av Java-backendens databaspersistens.
 
-Dagens arbete fortsätter från föregående arbetsdag med undersökning av V26-migrationen och hur den hanterar äldre databasscheman.
+Jag undersökte Copilots tidigare anmärkning kring V26-migrationen och kunde konstatera att projektet inte har någon äldre databas som behöver stödjas. Jag skapade även ett separat integrationstest med Testcontainers och PostgreSQL för att verifiera att migrationen skapar rätt tabeller och constraints. Testet gick igenom utan fel.
 
+Utöver detta påbörjade jag `MixControllerTest`. Testet för `createMix()` implementerades och verifierades fungera. Arbetet med testet för `getUserMixes()` har påbörjats och fortsätter.
 --

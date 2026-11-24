@@ -214,3 +214,70 @@ Steg 4 – Frontend
 - Ansluta MixerLab till Java-backend.
 - Ersätta eventuell lokal lagring av mixes med API-anrop.
 - Kontrollera att sparade mixes finns kvar efter refresh och omstart.
+
+--
+
+# Daglig LIA-loggbok – Tisdag 24 november 2026
+
+## 1. Arbetsuppgifter
+
+- Deltog i ett kort daily Scrum-möte via videolänk tillsammans med Johan Hellberg och Clara Westberg.
+- Under mötet diskuterades dagens arbete och planeringen framåt.
+- Beslutet för dagens fortsatta arbete är att fortsätta med MixerLab och arbetet med databaspersistens i Java-backend.
+
+**Planerade arbetsuppgifter för dagen:**
+
+- Fortsätta undersöka Copilots tidigare kodgranskningsanmärkningar från PR #261.
+- Fortsätta granskningen av databasmigrationen V26.
+- Undersöka hur V26 hanterar äldre databasscheman där tabellerna redan finns.
+- Vid behov komplettera `MixFlywayMigrationIT` med ytterligare migrationsscenarier.
+- Fortsätta granska och verifiera återstående förbättringspunkter från Copilot.
+- Kontrollera den senaste lokala commiten `16b1cced0` och förbereda eventuell push till GitHub.
+- Fortsätta kvalitetssäkra backend-implementationen inför den fortsatta frontend-integrationen.
+
+## 2. Tekniker och verktyg
+
+- Java och Spring Boot.
+- Git och GitHub.
+- Pull Requests och kodgranskning.
+- Maven Wrapper.
+- JUnit 5.
+- Testcontainers och PostgreSQL.
+- Flyway och SQL-migrationer.
+- Hibernate och JPA.
+- IntelliJ IDEA.
+- PowerShell och terminalkommandon.
+- GitHub Actions.
+
+## 3. Problem och lösningar
+
+Inga nya problem eller lösningar dokumenterade ännu.
+
+Dagens fortsatta arbete kommer bland annat att undersöka hur Flyway-migrationen V26 fungerar med äldre databasscheman.
+
+## 4. Ny kunskap
+
+Kompletteras under dagen utifrån nya kunskaper och erfarenheter från arbetet med MixerLab, databasmigrationer och kodgranskning.
+
+## 5. Reflektion
+
+Dagen inleddes med ett kort daily Scrum-möte där dagens arbete planerades tillsammans med Johan Hellberg och Clara Westberg.
+
+Fokus för dagen är att fortsätta utvecklingen av MixerLab och kvalitetssäkra Java-backendens databaspersistens. Arbetet fortsätter där föregående arbetsdag avslutades, med särskilt fokus på Copilots tidigare kodgranskningsanmärkningar och verifiering av databasmigrationen V26.
+
+Loggboken kompletteras under dagen med genomförda arbetsuppgifter, eventuella problem, lösningar och nya kunskaper.
+
+## Arbetstid
+
+- 09:30–09:45 – Daily Scrum via videomöte med Johan Hellberg och Clara Westberg.
+- 09:45–pågående – Fortsatt arbete med MixerLab och databaspersistens i Java-backend.
+
+**Sluttid:** Återstår att dokumentera.
+
+## Sammanfattning av dagen
+
+Dagen inleddes med ett daily Scrum-möte där dagens arbete planerades. Fokus ligger på att fortsätta arbetet med MixerLab, framför allt kvalitetssäkring av Java-backendens databaspersistens och granskning av tidigare kodgranskningsanmärkningar.
+
+Dagens arbete fortsätter från föregående arbetsdag med undersökning av V26-migrationen och hur den hanterar äldre databasscheman.
+
+--

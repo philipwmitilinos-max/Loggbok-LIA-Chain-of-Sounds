@@ -173,26 +173,42 @@ Nästa arbetsdag fortsätter arbetet med att granska de återstående kodgranskn
 - Undersökte om det fanns någon äldre databas eller tidigare migration som skapade tabellerna `mixes` och `mix_tracks`.
 - Konstaterade att det inte finns någon gammal databas som behöver stödjas i projektets nuvarande situation. Därför behövs inte de tidigare `ALTER TABLE`-instruktionerna för att hantera ett äldre schema.
 - Skapade och körde ett separat migrationstest, `MixFlywayMigrationIT`, med Testcontainers och PostgreSQL. Testet verifierade att V26 skapar tabellerna `mixes` och `mix_tracks` samt deras främmande nycklar.
-- Påbörjade arbetet med `MixControllerTest` för att komplettera testtäckningen av MixController.
-- Implementerade och körde testet `createMix()`, som verifierades fungera.
-- Påbörjade testet `getUserMixes()` för att kontrollera att API:et hämtar och returnerar användarens sparade mixes.
+- Skapade `MixControllerTest` för att komplettera testtäckningen av MixController.
+- Implementerade fyra tester för controllerns HTTP-endpoints:
+  - `createMix()`
+  - `getUserMixes()`
+  - `updateMix()`
+  - `deleteMix()`
+- Testade samtliga fyra metoder tillsammans och verifierade att hela testklassen gick igenom.
+- Körde `.\mvnw.cmd clean verify` för att kontrollera hela Java-backendens tester och bygge. Resultatet blev `BUILD SUCCESS`.
+- Granskade Git-status och upptäckte att de två nya testfilerna hade olika versioner i staging och arbetskatalogen. Uppdaterade staging så att de senaste versionerna kom med.
+- Skapade commit `5bcd18e43` med meddelandet `test: add MixController and Flyway migration tests`.
+- Säkerställde att den tidigare lokala commiten `16b1cced0`, som exkluderar `user` från `Mix.toString()`, också publicerades.
+- Pushade båda commitarna till feature-branchen `feature/mixerlab-database-persistence-java`.
+- Kontrollerade PR #265 efter pushen.
+- Påbörjade granskningen av en ny lista med tolv potentiella förbättringspunkter från Copilot. Den första punkten handlar om JWT-subject och säker hantering av användaridentitet i `MixController`.
 
 **Genomförda och verifierade moment:**
 
 - V26:s migrationstest: 1 test, 0 fel, 0 misslyckade tester.
-- `createMix()` i `MixControllerTest`: testet gick igenom.
-- Slutsatsen att projektet inte behöver hantera någon äldre databas för MixerLab-migrationen.
+- Samtliga fyra tester i `MixControllerTest` genomförda.
+- Hela `MixControllerTest` kördes och gick igenom.
+- `.\mvnw.cmd clean verify` genomfördes med resultatet `BUILD SUCCESS`.
+- Failsafe-resultatet visade 19 tester, 0 failures, 0 errors och 0 skipped.
+- Git-commitarna `16b1cced0` och `5bcd18e43` skapades och pushades till GitHub.
+- Arbetskatalogen kontrollerades och var ren efter commit.
 
 **Påbörjat arbete:**
 
-- `getUserMixes()` i `MixControllerTest`.
-- Fortsatt granskning av Copilots tidigare kodgranskningsanmärkningar.
+- Granskning av Copilots nya kodgranskningspunkter för PR #265.
+- Förberedelse för att undersöka hur JWT-subject hanteras och skyddas i samtliga `/mixes`-endpoints.
 
-**Återstår att verifiera:**
+**Återstår att verifiera eller genomföra:**
 
-- Resultatet av `getUserMixes()`-testet.
-- Övriga tester för `updateMix()` och `deleteMix()`.
-- Om den senaste lokala commiten `16b1cced0` ska pushas till GitHub.
+- Fortsatt granskning av de återstående kodgranskningspunkterna från Copilot.
+- Kontrollera säkerhetskonfigurationen för utvecklings- och produktionsmiljöerna.
+- Undersöka hur saknade eller ogiltiga JWT-subject hanteras.
+- Eventuella kodändringar och kompletterande tester utifrån resultatet av granskningen.
 
 ## 2. Tekniker och verktyg
 
@@ -214,7 +230,7 @@ Nästa arbetsdag fortsätter arbetet med att granska de återstående kodgranskn
 
 ## 3. Problem och lösningar
 
-**Granskning av V26-migrationen**
+### Granskning av V26-migrationen
 
 Copilots tidigare kodgranskning hade uppmärksammat problem med SQL-instruktioner som försökte ändra och ta bort befintliga constraints samt byta namn på en kolumn.
 
@@ -223,20 +239,39 @@ Genom att granska migrationens Git-historik och tidigare versioner kunde jag ide
 Jag undersökte även om någon tidigare migration skapade tabellerna `mixes` och `mix_tracks`. Det visade sig att det inte finns någon sådan äldre migration och att projektet inte har någon gammal databas som behöver stödjas.
 
 **Lösning:**
+
 De överflödiga `ALTER TABLE`-instruktionerna behövs inte för projektets nuvarande förutsättningar. Den korrigerade V26-migrationen behåller därför skapandet av tabellerna och deras constraints utan de tidigare ändringsinstruktionerna.
 
 För att verifiera lösningen skapade jag `MixFlywayMigrationIT`, som testar migrationen mot en separat PostgreSQL-container. Testet genomfördes utan fel.
 
-**Testning av MixController**
+### Testning av MixController
 
-Det saknades tidigare tester för controllerns HTTP-endpoints. Jag började därför skapa `MixControllerTest` med MockMvc och Mockito.
+Det saknades tidigare tester för controllerns HTTP-endpoints. Jag skapade därför `MixControllerTest` med MockMvc och Mockito.
 
 Under arbetet uppstod ett importfel där fel `MediaType` hade importerats från JUnit i stället för Spring.
 
 **Lösning:**
-Bytte till `org.springframework.http.MediaType`. Därefter kunde `createMix()`-testet köras och gick igenom.
 
-Arbetet med resterande controller-tester fortsätter.
+Bytte till `org.springframework.http.MediaType`. Därefter kunde testerna implementeras och köras.
+
+Följande tester genomfördes:
+
+- `createMix()` – kontrollerar att en mix kan skapas och att API:et returnerar HTTP 201 Created.
+- `getUserMixes()` – kontrollerar att användarens mixes hämtas och returneras med HTTP 200 OK.
+- `updateMix()` – kontrollerar att en mix kan uppdateras och att API:et returnerar HTTP 200 OK.
+- `deleteMix()` – kontrollerar att en mix kan tas bort och att API:et returnerar HTTP 204 No Content.
+
+Samtliga fyra tester gick igenom.
+
+### Git och versionshantering
+
+Vid kontroll av Git-status upptäckte jag att testfilerna hade olika innehåll i staging och arbetskatalogen. De versioner som låg staged innehöll endast tomma testklasser.
+
+**Lösning:**
+
+Uppdaterade staging med de senaste versionerna av båda filerna och kontrollerade ändringarnas omfattning innan commit.
+
+Därefter skapades commiten `5bcd18e43` och ändringarna pushades tillsammans med den tidigare commiten `16b1cced0` till GitHub.
 
 ## 4. Ny kunskap
 
@@ -246,6 +281,8 @@ Arbetet med resterande controller-tester fortsätter.
 - Arbetat vidare med MockMvc för att testa HTTP-anrop till Spring Boot-controllers.
 - Fördjupat kunskapen om hur Mockito används för att mocka serviceklasser och verifiera att rätt metod anropas med rätt argument.
 - Fått mer erfarenhet av att testa JWT-autentisering i controller-tester med Spring Security Test.
+- Fått bättre förståelse för hur Git staging fungerar och varför det är viktigt att kontrollera skillnaden mellan staged och ostagade ändringar före en commit.
+- Fördjupat kunskapen om hur Maven `clean verify` används för att kontrollera både tester och bygge innan ändringar publiceras.
 
 ## 5. Reflektion
 
@@ -253,15 +290,20 @@ Dagen har framför allt handlat om kvalitetssäkring av MixerLabs Java-backend.
 
 En viktig del av arbetet var att undersöka Copilots tidigare anmärkning kring V26-migrationen. Genom att granska Git-historiken och kontrollera projektets faktiska förutsättningar kunde jag avgöra att det inte finns någon äldre databas som behöver stödjas. Jag kunde därefter verifiera den korrigerade migrationen med ett separat integrationstest mot PostgreSQL.
 
-Jag har även påbörjat arbetet med att komplettera testtäckningen för MixController. Det första testet, `createMix()`, fungerar och är verifierat. Nästa steg är att fortsätta med `getUserMixes()` och därefter testa uppdatering och borttagning av mixes.
+Jag har även kompletterat testtäckningen för MixController genom att skapa fyra tester med MockMvc och Mockito. Samtliga tester gick igenom, och därefter kördes hela Java-backendens verifiering med Maven. Bygget avslutades med `BUILD SUCCESS`.
 
-Arbetet har gett mig bättre förståelse för hur viktigt det är att kombinera kodgranskning med tester som verifierar den faktiska funktionaliteten.
+Efter verifieringen genomfördes commits och push till GitHub, vilket uppdaterade PR #265.
+
+Mot slutet av arbetet fick jag en ny lista med potentiella förbättringspunkter från Copilot. Nästa steg blir att granska dessa systematiskt, med fokus på JWT-hantering och säkerhet. Jag kommer att undersöka varje punkt innan eventuella kodändringar genomförs.
+
+Arbetet har gett mig bättre förståelse för hur kodgranskning, automatiserade tester, databasmigrationer och versionshantering tillsammans bidrar till en mer tillförlitlig backend.
 
 ## Arbetstid
 
 - 09:30–09:45 – Daily Scrum via videomöte med Johan Hellberg och Clara Westberg.
 - 09:45–12:00 – Fortsatt arbete med MixerLab, databasmigrationer, kodgranskning och controller-tester.
-- 12:00-12:30 - Lunch.
+- 12:00–12:30 – Lunch.
+- 12:30–pågående – Fortsatt testutveckling, Maven-verifiering, Git-commits, push till GitHub och granskning av nya kodgranskningspunkter.
 
 **Sluttid:** Återstår att dokumentera.
 
@@ -271,4 +313,8 @@ Dagen inleddes med ett daily Scrum-möte tillsammans med Johan Hellberg och Clar
 
 Jag undersökte Copilots tidigare anmärkning kring V26-migrationen och kunde konstatera att projektet inte har någon äldre databas som behöver stödjas. Jag skapade även ett separat integrationstest med Testcontainers och PostgreSQL för att verifiera att migrationen skapar rätt tabeller och constraints. Testet gick igenom utan fel.
 
-## Utöver detta påbörjade jag `MixControllerTest`. Testet för `createMix()` implementerades och verifierades fungera. Arbetet med testet för `getUserMixes()` har påbörjats och fortsätter.
+Utöver detta färdigställde jag `MixControllerTest` med fyra tester för att kontrollera skapande, hämtning, uppdatering och borttagning av mixes. Samtliga tester gick igenom. Hela Java-backendens Maven-verifiering avslutades med `BUILD SUCCESS`.
+
+Jag skapade därefter commit `5bcd18e43` för de nya testerna och pushade den tillsammans med den tidigare commiten `16b1cced0` till feature-branchen för PR #265.
+
+Dagen avslutades med att jag började granska en ny lista med potentiella förbättringspunkter från Copilot. Nästa arbetsområde blir att undersöka JWT-hanteringen och säkerheten i MixController.

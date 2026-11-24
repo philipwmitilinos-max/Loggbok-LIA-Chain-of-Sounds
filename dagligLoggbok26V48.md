@@ -164,7 +164,7 @@ Nästa arbetsdag fortsätter arbetet med att granska de återstående kodgranskn
 
 ## 1. Arbetsuppgifter
 
-- Deltog i ett kort daily Scrum-möte via videolänk tillsammans med Johan Hellberg och Clara Westberg.
+- Deltog i ett kort Daily Scrum-möte via videolänk tillsammans med Johan Hellberg och Clara Westberg.
 - Under mötet diskuterades dagens arbete och planeringen framåt.
 - Fortsatte arbetet med MixerLab och databaspersistens i Java-backend.
 - Fortsatte granskningen av Copilots tidigare kodgranskningsanmärkningar från PR #261.
@@ -179,41 +179,66 @@ Nästa arbetsdag fortsätter arbetet med att granska de återstående kodgranskn
   - `getUserMixes()`
   - `updateMix()`
   - `deleteMix()`
-- Testade samtliga fyra metoder tillsammans och verifierade att hela testklassen gick igenom.
+- Testade samtliga fyra metoder och verifierade att hela testklassen gick igenom.
 - Körde `.\mvnw.cmd clean verify` för att kontrollera hela Java-backendens tester och bygge. Resultatet blev `BUILD SUCCESS`.
 - Granskade Git-status och upptäckte att de två nya testfilerna hade olika versioner i staging och arbetskatalogen. Uppdaterade staging så att de senaste versionerna kom med.
 - Skapade commit `5bcd18e43` med meddelandet `test: add MixController and Flyway migration tests`.
-- Säkerställde att den tidigare lokala commiten `16b1cced0`, som exkluderar `user` från `Mix.toString()`, också publicerades.
+- Säkerställde att den tidigare commiten `16b1cced0`, som exkluderar `user` från `Mix.toString()`, också publicerades.
 - Pushade båda commitarna till feature-branchen `feature/mixerlab-database-persistence-java`.
 - Kontrollerade PR #265 efter pushen.
 - Påbörjade granskningen av en ny lista med tolv potentiella förbättringspunkter från Copilot. Den första punkten handlar om JWT-subject och säker hantering av användaridentitet i `MixController`.
+- Granskade `SecurityConfig.java`, `application.properties` och `application-dev.properties` för att undersöka hur autentisering och säkerhet är konfigurerade.
+- Granskade `MixController.java`, `MixService.java`, `UserService.java` och `User.java` för att förstå hur JWT-subject används för att identifiera användaren.
+- Undersökte hur `UserService.getOrCreateUserBySubject()` hanterar användarens subject.
+- Konstaterade att det inte finns någon separat `UserServiceTest.java`. Hittade däremot `UserServiceSubscriptionDeletedTest.java`, som testar hantering av avslutade Stripe-prenumerationer.
+- Beslutade att först stämma av med Johan innan eventuella ändringar eller nya tester för validering av JWT-subject genomförs.
+- Granskade de befintliga testerna i `MixControllerTest` och `MixServiceTest` för att se vilken felhantering som redan testas.
+- Identifierade att `MixControllerTest` endast testar lyckade HTTP-anrop: 201, 200 och 204.
+- Konstaterade att `MixServiceTest` redan innehåller tester för undantag och för situationer där en användare försöker uppdatera eller radera någon annans mix.
+- Undersökte skillnaden mellan servicetester och controller-tester. Servicetesterna kontrollerar logiken och undantagen, medan controller-testerna kontrollerar HTTP-svaren.
+- Granskade `ApiExceptionHandler.java` för att undersöka hur projektet mappar undantag till HTTP-statuskoder.
+- Granskade `ApiExceptionHandlerTest.java`, som innehåller åtta tester för befintlig felhantering.
+- Identifierade att `MixNotFoundException` saknar en koppling till `ApiExceptionHandler` och att `MixService` fortfarande använder en generell `RuntimeException` när en mix inte hittas.
+- Granskade den befintliga klassen `MixNotFoundException.java`. Ingen integration med felhanteraren eller komplettering av tester genomfördes.
+- Avslutade dagens arbete efter att ha gått igenom de viktigaste delarna av felhanteringen och identifierat vad som behöver kompletteras.
 
-**Genomförda och verifierade moment:**
+### Genomförda och verifierade moment
 
-- V26:s migrationstest: 1 test, 0 fel, 0 misslyckade tester.
+- V26:s migrationstest: 1 test, 0 fel och 0 misslyckade tester.
 - Samtliga fyra tester i `MixControllerTest` genomförda.
 - Hela `MixControllerTest` kördes och gick igenom.
 - `.\mvnw.cmd clean verify` genomfördes med resultatet `BUILD SUCCESS`.
 - Failsafe-resultatet visade 19 tester, 0 failures, 0 errors och 0 skipped.
 - Git-commitarna `16b1cced0` och `5bcd18e43` skapades och pushades till GitHub.
 - Arbetskatalogen kontrollerades och var ren efter commit.
+- Befintlig säkerhetskonfiguration och felhantering granskades.
+- Befintliga tester i `MixServiceTest` och `ApiExceptionHandlerTest` undersöktes.
 
-**Påbörjat arbete:**
+### Påbörjat arbete
 
 - Granskning av Copilots nya kodgranskningspunkter för PR #265.
-- Förberedelse för att undersöka hur JWT-subject hanteras och skyddas i samtliga `/mixes`-endpoints.
+- Undersökning av hur JWT-subject hanteras och skyddas i samtliga `/mixes`-endpoints.
+- Undersökning av hur ogiltiga eller saknade subject-värden kan hanteras.
+- Granskning av hur fel från `MixService` ska översättas till korrekta HTTP-statuskoder.
+- Planering av kompletterande tester för `MixControllerTest`.
 
-**Återstår att verifiera eller genomföra:**
+### Återstår att verifiera eller genomföra
 
-- Fortsatt granskning av de återstående kodgranskningspunkterna från Copilot.
-- Kontrollera säkerhetskonfigurationen för utvecklings- och produktionsmiljöerna.
-- Undersöka hur saknade eller ogiltiga JWT-subject hanteras.
-- Eventuella kodändringar och kompletterande tester utifrån resultatet av granskningen.
+- Stämma av med Johan om han vill att valideringen av JWT-subject ska hanteras centralt i `UserService`.
+- Fortsätta granskningen av Copilots återstående kodgranskningspunkter.
+- Komplettera `ApiExceptionHandler` med hantering för `MixNotFoundException`.
+- Lägga till motsvarande test i `ApiExceptionHandlerTest`.
+- Undersöka behovet av en generell hantering av oväntade serverfel (500).
+- Uppdatera `MixService` så att den använder ett specifikt undantag när en mix inte hittas.
+- Komplettera `MixControllerTest` med tester för felaktiga requests och relevanta HTTP-statuskoder.
+- Verifiera att felhanteringen fungerar genom hela kedjan från controller till exception handler.
+- Köra relevanta tester och Maven-verifiering efter eventuella kodändringar.
 
 ## 2. Tekniker och verktyg
 
 - Java och Spring Boot.
 - Spring MVC och Spring Security.
+- JWT och autentisering.
 - Git och GitHub.
 - Pull Requests och kodgranskning.
 - Maven Wrapper.
@@ -263,6 +288,42 @@ Följande tester genomfördes:
 
 Samtliga fyra tester gick igenom.
 
+Vid en senare granskning identifierades dock att testerna endast täcker lyckade anrop. Felaktiga requests och andra felaktiga HTTP-svar behöver fortfarande testas.
+
+### Granskning av JWT-subject och användaridentitet
+
+Copilots första nya granskningspunkt handlade om hur JWT-subject används för att identifiera användaren.
+
+Jag granskade säkerhetskonfigurationen och följde hur subject skickas från `MixController` vidare till `MixService` och `UserService`.
+
+Jag identifierade att `UserService.getOrCreateUserBySubject()` saknar en uttrycklig kontroll av om subject är null, tomt eller endast innehåller blanksteg.
+
+Det finns ingen separat `UserServiceTest.java` i projektet.
+
+**Bedömning:**
+
+Eftersom `UserService` används av fler delar av applikationen vill jag först stämma av med Johan innan jag gör en central ändring eller lägger till nya tester.
+
+Därför genomfördes inga kodändringar i denna del.
+
+### Granskning av felhantering och HTTP-statuskoder
+
+Jag undersökte `MixControllerTest`, `MixServiceTest`, `ApiExceptionHandler` och `ApiExceptionHandlerTest`.
+
+Granskningen visade att `MixServiceTest` redan testar flera situationer där användaren eller mixen inte kan hittas och där en användare försöker ändra eller radera någon annans mix.
+
+Däremot testar `MixControllerTest` endast lyckade HTTP-anrop.
+
+I `ApiExceptionHandler` finns redan hantering för bland annat 400, 403, 404, 409 och 503. Däremot saknas en särskild hantering för `MixNotFoundException` och en uttrycklig generell hantering för oväntade serverfel.
+
+**Identifierad förbättring:**
+
+En särskild exception-klass, `MixNotFoundException`, finns redan i projektet. Nästa steg är att koppla den till `ApiExceptionHandler` så att en mix som inte hittas kan returnera HTTP 404 Not Found.
+
+Därefter behöver motsvarande test läggas till i `ApiExceptionHandlerTest`.
+
+Inga ändringar i felhanteringen genomfördes under dagens granskning.
+
 ### Git och versionshantering
 
 Vid kontroll av Git-status upptäckte jag att testfilerna hade olika innehåll i staging och arbetskatalogen. De versioner som låg staged innehöll endast tomma testklasser.
@@ -281,7 +342,10 @@ Därefter skapades commiten `5bcd18e43` och ändringarna pushades tillsammans me
 - Arbetat vidare med MockMvc för att testa HTTP-anrop till Spring Boot-controllers.
 - Fördjupat kunskapen om hur Mockito används för att mocka serviceklasser och verifiera att rätt metod anropas med rätt argument.
 - Fått mer erfarenhet av att testa JWT-autentisering i controller-tester med Spring Security Test.
-- Fått bättre förståelse för hur Git staging fungerar och varför det är viktigt att kontrollera skillnaden mellan staged och ostagade ändringar före en commit.
+- Fått bättre förståelse för skillnaden mellan controller-tester och servicetester.
+- Fördjupat kunskapen om hur exception-klasser kan användas för att skilja mellan olika typer av fel.
+- Fått bättre förståelse för hur `ApiExceptionHandler` översätter Java-undantag till HTTP-statuskoder.
+- Fått bättre förståelse för Git staging och varför det är viktigt att kontrollera skillnaden mellan staged och ostagade ändringar före en commit.
 - Fördjupat kunskapen om hur Maven `clean verify` används för att kontrollera både tester och bygge innan ändringar publiceras.
 
 ## 5. Reflektion
@@ -294,22 +358,26 @@ Jag har även kompletterat testtäckningen för MixController genom att skapa fy
 
 Efter verifieringen genomfördes commits och push till GitHub, vilket uppdaterade PR #265.
 
-Mot slutet av arbetet fick jag en ny lista med potentiella förbättringspunkter från Copilot. Nästa steg blir att granska dessa systematiskt, med fokus på JWT-hantering och säkerhet. Jag kommer att undersöka varje punkt innan eventuella kodändringar genomförs.
+Under eftermiddagen fortsatte jag med Copilots nya granskningspunkter. Jag undersökte JWT-subject, användaridentifiering och befintlig felhantering. Jag upptäckte även att `MixControllerTest` behöver kompletteras med tester för misslyckade HTTP-anrop, eftersom de nuvarande testerna endast verifierar lyckade operationer.
 
-Arbetet har gett mig bättre förståelse för hur kodgranskning, automatiserade tester, databasmigrationer och versionshantering tillsammans bidrar till en mer tillförlitlig backend.
+Jag identifierade flera möjliga förbättringar men valde att inte genomföra kodändringar innan jag hade undersökt projektets befintliga struktur och tester. Jag vill även stämma av med Johan innan jag gör en central förändring i `UserService`.
+
+Arbetet har gett mig bättre förståelse för hur kodgranskning, säkerhet, automatiserade tester, databasmigrationer och versionshantering tillsammans bidrar till en mer tillförlitlig backend.
+
+Jag avslutade arbetsdagen när jag började tappa orken. Nästa arbetsdag kan jag fortsätta med felhanteringen och de återstående granskningspunkterna.
 
 ## Arbetstid
 
 - 09:30–09:45 – Daily Scrum via videomöte med Johan Hellberg och Clara Westberg.
 - 09:45–12:00 – Fortsatt arbete med MixerLab, databasmigrationer, kodgranskning och controller-tester.
 - 12:00–12:30 – Lunch.
-- 12:30–pågående – Fortsatt testutveckling, Maven-verifiering, Git-commits, push till GitHub och granskning av nya kodgranskningspunkter.
+- 12:30–15:30 – Fortsatt testutveckling, Maven-verifiering, Git-commits, push till GitHub och granskning av nya kodgranskningspunkter.
 
-**Sluttid:** Återstår att dokumentera.
+**Sluttid:** 15:30.
 
 ## Sammanfattning av dagen
 
-Dagen inleddes med ett daily Scrum-möte tillsammans med Johan Hellberg och Clara Westberg. Därefter fortsatte arbetet med MixerLab och kvalitetssäkring av Java-backendens databaspersistens.
+Dagen inleddes med ett Daily Scrum-möte tillsammans med Johan Hellberg och Clara Westberg. Därefter fortsatte arbetet med MixerLab och kvalitetssäkring av Java-backendens databaspersistens.
 
 Jag undersökte Copilots tidigare anmärkning kring V26-migrationen och kunde konstatera att projektet inte har någon äldre databas som behöver stödjas. Jag skapade även ett separat integrationstest med Testcontainers och PostgreSQL för att verifiera att migrationen skapar rätt tabeller och constraints. Testet gick igenom utan fel.
 
@@ -317,4 +385,10 @@ Utöver detta färdigställde jag `MixControllerTest` med fyra tester för att k
 
 Jag skapade därefter commit `5bcd18e43` för de nya testerna och pushade den tillsammans med den tidigare commiten `16b1cced0` till feature-branchen för PR #265.
 
-Dagen avslutades med att jag började granska en ny lista med potentiella förbättringspunkter från Copilot. Nästa arbetsområde blir att undersöka JWT-hanteringen och säkerheten i MixController.
+Under eftermiddagen granskade jag Copilots nya förbättringspunkter med fokus på JWT-subject och felhantering. Jag undersökte befintliga tester och projektets `ApiExceptionHandler` och identifierade att `MixControllerTest` behöver kompletteras med tester för misslyckade HTTP-anrop. Jag identifierade även behovet av att koppla `MixNotFoundException` till felhanteraren.
+
+Jag valde att avvakta med ändringar kring JWT-subject tills jag har stämt av frågan med Johan.
+
+Dagen avslutades efter en genomgång av de återstående förbättringarna. Nästa steg blir att fortsätta arbetet med felhantering och kompletterande tester för MixerLab.
+
+--

@@ -158,63 +158,6 @@ Arbetet med Code Quality Bots kommentarer fortsatte också. Ändringar gjordes i
 
 Nästa arbetsdag fortsätter arbetet med att granska de återstående kodgranskningsanmärkningarna, undersöka migration mot äldre databasscheman och förbereda fortsatt integration med frontend.
 
-### Backend – studio-bass-api
-
-Genomfört
-
-- [x] Skapat Mix-entiteten.
-- [x] Skapat MixEq.
-- [x] Skapat MixRepository.
-- [x] Skapat MixRequestDto och MixResponseDto.
-- [x] Implementerat MixService.
-- [x] Implementerat endpoints för att hantera mixes.
-- [x] Implementerat användarrelationer.
-- [x] Implementerat databasmigration V26.
-- [x] Skapat 15 enhetstester för MixService.
-- [x] Skapat MixIT för integrationstester.
-- [x] Åtgärdat problemet med V26 som identifierades i den tidigare CI-körningen.
-
-Kvarstående arbete
-
-- [ ] Lösa problemet med uppdatering av track-ID:n.
-- [ ] Komplettera HTTP-/controllerintegrationstester.
-- [ ] Förbättra autentiseringshanteringen.
-- [ ] Validera trackIds.
-- [ ] Undersöka N+1-frågor.
-- [ ] Förbättra felhantering för mixar som inte hittas.
-- [ ] Förbättra integrationstesterna med EntityManager, flush() och clear().
-
-Detta är huvudsakligen förbättringspunkterna från Copilots granskning av PR #261.
-
-### Vad ska vi göra härnäst?
-
-rekommenderar att vi arbetar i den här ordningen:
-
-Steg 1 – Få igång testmiljön
-
-- Kontrollera Maven-installationen.
-- Säkerställa att vi kan köra mvn clean verify.
-- Kontrollera att V26 fungerar.
-
-Steg 2 – Åtgärda Copilots kommentarer
-
-- Ta en kommentar i taget.
-- Ändra befintlig kod så lite som möjligt.
-- Skriva eller uppdatera tester.
-- Köra testerna efter varje ändring.
-
-Steg 3 – Verifiera backend
-
-- Köra samtliga enhets- och integrationstester.
-- Kontrollera API-endpoints.
-- Säkerställa att användarnas mixes hanteras korrekt.
-
-Steg 4 – Frontend
-
-- Ansluta MixerLab till Java-backend.
-- Ersätta eventuell lokal lagring av mixes med API-anrop.
-- Kontrollera att sparade mixes finns kvar efter refresh och omstart.
-
 --
 
 # Daglig LIA-loggbok – Tisdag 24 november 2026
@@ -235,15 +178,18 @@ Steg 4 – Frontend
 - Påbörjade testet `getUserMixes()` för att kontrollera att API:et hämtar och returnerar användarens sparade mixes.
 
 **Genomförda och verifierade moment:**
+
 - V26:s migrationstest: 1 test, 0 fel, 0 misslyckade tester.
 - `createMix()` i `MixControllerTest`: testet gick igenom.
 - Slutsatsen att projektet inte behöver hantera någon äldre databas för MixerLab-migrationen.
 
 **Påbörjat arbete:**
+
 - `getUserMixes()` i `MixControllerTest`.
 - Fortsatt granskning av Copilots tidigare kodgranskningsanmärkningar.
 
 **Återstår att verifiera:**
+
 - Resultatet av `getUserMixes()`-testet.
 - Övriga tester för `updateMix()` och `deleteMix()`.
 - Om den senaste lokala commiten `16b1cced0` ska pushas till GitHub.
@@ -314,7 +260,8 @@ Arbetet har gett mig bättre förståelse för hur viktigt det är att kombinera
 ## Arbetstid
 
 - 09:30–09:45 – Daily Scrum via videomöte med Johan Hellberg och Clara Westberg.
-- 09:45–pågående – Fortsatt arbete med MixerLab, databasmigrationer, kodgranskning och controller-tester.
+- 09:45–12:00 – Fortsatt arbete med MixerLab, databasmigrationer, kodgranskning och controller-tester.
+- 12:00-12:30 - Lunch.
 
 **Sluttid:** Återstår att dokumentera.
 
@@ -324,5 +271,4 @@ Dagen inleddes med ett daily Scrum-möte tillsammans med Johan Hellberg och Clar
 
 Jag undersökte Copilots tidigare anmärkning kring V26-migrationen och kunde konstatera att projektet inte har någon äldre databas som behöver stödjas. Jag skapade även ett separat integrationstest med Testcontainers och PostgreSQL för att verifiera att migrationen skapar rätt tabeller och constraints. Testet gick igenom utan fel.
 
-Utöver detta påbörjade jag `MixControllerTest`. Testet för `createMix()` implementerades och verifierades fungera. Arbetet med testet för `getUserMixes()` har påbörjats och fortsätter.
---
+## Utöver detta påbörjade jag `MixControllerTest`. Testet för `createMix()` implementerades och verifierades fungera. Arbetet med testet för `getUserMixes()` har påbörjats och fortsätter.

@@ -410,7 +410,7 @@ Dagen avslutades efter en genomgång av de återstående förbättringarna. Näs
 - Granskade den befintliga klassen `UserService.java` för att identifiera vilka metoder och funktioner som behöver testas.
 - Granskade `UserServiceSubscriptionDeletedTest.java` för att följa projektets befintliga struktur för enhetstester med JUnit 5, Mockito och AssertJ.
 - Skapade `UserServiceTest.java` med mockade beroenden för `UserRepo` och `StripeSubscriptionService`.
-- Implementerade och verifierade tester för följande funktioner:
+- Implementerade och verifierade 13 tester för följande funktioner:
   - Hämta en befintlig användare.
   - Skapa en ny användare om den inte finns.
   - Tilldela standardrollen `USER` när användaren saknar roller.
@@ -424,10 +424,40 @@ Dagen avslutades efter en genomgång av de återstående förbättringarna. Näs
   - Uppdatera en användares roller.
   - Tilldela standardrollen `USER` när en tom rollista skickas in.
   - Tilldela standardrollen `USER` när rollistan är `null`.
-- Undersökte varför ett test för redan använt Free Trial misslyckades. Upptäckte att testanvändaren saknade roller, vilket gjorde att `getOrCreateUserBySubject()` sparade användaren innan undantaget kastades. Kompletterade testdata med standardrollen `USER`.
+- Undersökte varför ett test för redan använd Free Trial misslyckades. Upptäckte att testanvändaren saknade roller, vilket gjorde att `getOrCreateUserBySubject()` sparade användaren innan undantaget kastades. Kompletterade testdata med standardrollen `USER`.
 - Undersökte varför testet för att förhindra Free Trial för betalande användare misslyckades. Granskade `hasPaidMembership()` och `hasActiveMembershipIn()` i `User.java`.
 - Upptäckte att ett aktivt betalt medlemskap kräver att medlemskapet tillhör `PAID_TIERS`, att `paidAt` inte är `null` och att medlemskapet inte har gått ut.
 - Kompletterade testdata med betalningsdatum och ett framtida utgångsdatum. Därefter gick testet igenom.
+- Fortsatte med testning av MixerLab-relaterad kod.
+- Granskade `MixService.java` och identifierade att metoderna `updateMix()` och `deleteMix()` fortfarande använde ett generellt `RuntimeException` när en mix inte hittades.
+- Ändrade dessa metoder så att de i stället kastar `MixNotFoundException`.
+- Uppdaterade motsvarande tester i `MixServiceTest.java` för att kontrollera att rätt undantag kastas när en mix saknas eller tillhör en annan användare.
+- Verifierade att samtliga 15 tester i `MixServiceTest` passerade.
+- Fortsatte med HTTP-tester i `MixControllerTest.java`.
+- Lade till tester för att kontrollera att uppdatering och borttagning av en mix som inte finns returnerar HTTP 404 Not Found.
+- Lade till ett test för att kontrollera att skapande av en mix med ett tomt namn returnerar HTTP 400 Bad Request.
+- Lade till ytterligare ett test för att kontrollera att uppdatering av en mix med ett tomt namn returnerar HTTP 400 Bad Request.
+- Kontrollerade att `MixService` inte anropas när valideringen misslyckas.
+- Verifierade att samtliga 8 tester i `MixControllerTest` passerade.
+- Granskade den nuvarande klassen `MixEq.java` inför fortsatt arbete med validering av MixerLab-data.
+- Upptäckte att klassen saknar valideringsregler för sina åtta fält. Arbetet med att bestämma tillåtna värdeintervall pausades i väntan på att kontrollera vilka intervall frontendens reglage använder.
+- Avslutade dagens kodarbete med att kontrollera Git-status, granska ändringarna, skapa en commit och pusha den till GitHub.
+
+### Git och versionshantering
+
+- Kontrollerade ändrade filer med `git status`.
+- Granskade ändringarnas omfattning med `git diff --stat`.
+- Lade till tre ändrade filer för commit:
+  - `MixService.java`
+  - `MixServiceTest.java`
+  - `MixControllerTest.java`
+- Skapade commit med följande information:
+
+  **Commit:** `eef2d98e4`  
+  **Commit-meddelande:** `test: add mix validation and not found tests`
+
+- Pushade committen till GitHub utan problem.
+- Bekräftade att ändringarna skickades till branchen `feature/mixerlab-database-persistence-java`.
 
 ## 2. Tekniker och verktyg
 
@@ -440,9 +470,16 @@ Dagen avslutades efter en genomgång av de återstående förbättringarna. Näs
 - Maven.
 - Git och GitHub.
 - Enhetstestning och mockning.
+- HTTP-tester med MockMvc.
+- Spring MVC och Bean Validation.
 - `UserService`.
 - `UserRepo`.
 - `StripeSubscriptionService`.
+- `MixService`.
+- `MixServiceTest`.
+- `MixControllerTest`.
+- `MixNotFoundException`.
+- `MixEq`.
 
 ## 3. Problem och lösningar
 
@@ -474,6 +511,32 @@ Granskade `hasPaidMembership()` och upptäckte att metoden även kontrollerar `p
 
 Kompletterade testdata med ett betalningsdatum och ett framtida utgångsdatum. Därefter fungerade testet.
 
+### Hantering av saknade mixes
+
+Vid granskning av `MixService` upptäckte jag att `updateMix()` och `deleteMix()` använde generella `RuntimeException` när en mix inte hittades.
+
+**Lösning:**
+
+Ändrade metoderna så att de använder `MixNotFoundException`. Uppdaterade även testerna i `MixServiceTest` för att kontrollera det nya undantaget.
+
+Detta gör felhanteringen tydligare och gör det möjligt för API:ets undantagshanterare att returnera HTTP 404 Not Found.
+
+### HTTP-validering i MixController
+
+Behövde kontrollera att API:et returnerar rätt HTTP-status när användaren försöker skapa eller uppdatera en mix med ett tomt namn.
+
+**Lösning:**
+
+Kompletterade `MixControllerTest` med tester för både POST och PUT. Kontrollerade även att `MixService` inte anropas när valideringen misslyckas.
+
+Båda testerna passerade med HTTP 400 Bad Request som förväntat.
+
+### Granskning av MixEq
+
+Vid granskning av `MixEq.java` upptäckte jag att de åtta fälten saknar uttryckliga valideringsregler.
+
+Innan några ändringar görs behöver jag undersöka vilka värdeintervall MixerLab använder i frontend. Det är viktigt att valideringen i backend överensstämmer med frontendens reglage.
+
 ### Mockito-varningar
 
 Under testkörningarna visades varningar om att Mockito laddar sin Java-agent dynamiskt. Varningarna handlar om framtida kompatibilitet med JDK och är inte orsaken till att testerna misslyckades.
@@ -485,34 +548,40 @@ Detta har noterats för eventuell undersökning senare.
 - Fördjupat kunskapen om hur man bygger en generell testklass för en serviceklass.
 - Arbetat vidare med JUnit 5, Mockito och AssertJ.
 - Fått bättre förståelse för hur mockade repositories används för att testa serviceklasser utan en riktig databas.
-- Lärt mig mer om hur `verify()` och `times()` används för att kontrollera antalet metodanrop.
+- Lärt mig hur `verify()` och `times()` används för att kontrollera antalet metodanrop.
 - Fördjupat förståelsen för hur `getOrCreateUserBySubject()` fungerar och hur användarens standardroller hanteras.
 - Lärt mig att testdata behöver uppfylla samtliga villkor i den faktiska affärslogiken.
 - Fördjupat förståelsen för hur `hasPaidMembership()` kontrollerar medlemskap, betalningsdatum och utgångsdatum.
 - Fått mer erfarenhet av att felsöka misslyckade enhetstester genom att följa anropskedjan i serviceklasserna.
+- Fördjupat förståelsen för hur specifika undantag kan användas i stället för generella `RuntimeException`.
+- Fått mer erfarenhet av att testa HTTP-statuskoder med MockMvc.
+- Fördjupat förståelsen för hur `@Valid` och Bean Validation används för att kontrollera inkommande API-data.
+- Fått mer erfarenhet av Git-arbetsflödet med `git status`, `git diff`, `git add`, `git commit` och `git push`.
 
 ## 5. Reflektion
 
-Dagen har hittills handlat mycket om att bygga upp testtäckningen för `UserService`.
+Dagen har innehållit mycket arbete med testning och kvalitetssäkring av backend-koden.
 
-Jag började med att undersöka den befintliga teststrukturen och skapade därefter en separat testklass. Arbetet har varit stegvis där jag har implementerat ett test i taget och kontrollerat att det fungerar innan jag gått vidare.
+Jag började med att bygga upp testtäckningen för `UserService`. Arbetet var stegvis där jag granskade den befintliga koden och implementerade ett test i taget. Jag stötte på några problem där testerna inte fungerade som förväntat, men genom att undersöka den bakomliggande affärslogiken kunde jag förstå orsakerna och korrigera testdatan.
 
-Under arbetet stötte jag på några problem där testerna inte fungerade som förväntat. Genom att undersöka den befintliga koden kunde jag förstå varför metoderna anropades och vilka villkor som behövde uppfyllas i testdata.
+Därefter fortsatte jag med MixerLab-relaterad kod. Jag förbättrade felhanteringen i `MixService` och kompletterade testerna för att kontrollera att saknade mixes hanteras korrekt.
 
-En viktig lärdom är att det inte alltid är själva testet som är fel när ett test misslyckas. Ibland behöver man förstå den bakomliggande affärslogiken bättre.
+Jag arbetade även vidare med HTTP-testerna i `MixControllerTest`. Det var värdefullt att kunna kontrollera både lyckade anrop och situationer där användaren skickar ogiltiga uppgifter eller försöker komma åt en mix som inte finns.
 
-Jag har hittills implementerat 13 tester och fått bättre förståelse för hur man testar serviceklasser med Mockito och AssertJ.
+En annan viktig del av dagen var att kontrollera och dokumentera ändringarna i Git. Jag skapade en commit och pushade den framgångsrikt till rätt feature-branch på GitHub.
 
-Nästa steg är att fortsätta komplettera testerna för `UserService` och därefter börja undersöka hur MixerLab ska integreras med Java-backenden via frontendens API.
+Innan jag avslutade dagen granskade jag även `MixEq.java`. Jag upptäckte att validering saknas, men behöver först kontrollera frontendens värdeintervall innan jag bestämmer vilka regler som ska implementeras.
+
+Sammantaget har jag fått mer erfarenhet av enhetstestning, HTTP-testning, felhantering och versionshantering. Jag har också fått en bättre förståelse för hur viktigt det är att undersöka befintlig kod och affärslogik innan man gör förändringar.
 
 ## Arbetstid
 
 - **09:30–09:50:** Daily sprint/scrum via videomöte med Johan Hellberg, Clara Westberg, Ellinor Höijer, Sakarias Eriksson och Nikola Mirosavljevic. En genomgång av MixerLab var planerad, men Nisse deltog inte. Mötet skulle fortsätta kl. 10:00.
 - **09:50–10:00:** Förberedde mig inför mötets fortsättning.
 - **10:00–10:20:** Mötet fortsatte. Frågade Johan om `UserServiceTest`. Johan sa att jag skulle skapa tester för det. Nisse deltog fortfarande inte.
-- **10:20-12:05** Arbetade med att skapa `UserServiceTest`, granska befintlig servicekod och implementera samt felsöka enhetstester. Hittills har 13 tester implementerats och verifierats.
-- **12:05-12:45** Lunch.
-- **12:45** Fortsätter med `UserServiceTest`.
+- **10:20–12:05:** Arbetade med att skapa `UserServiceTest`, granska befintlig servicekod och implementera samt felsöka enhetstester. Hittills hade 13 tester implementerats och verifierats.
+- **12:05–12:45:** Lunch.
+- **12:45–16:30:** Fortsatte arbetet med `UserServiceTest` och gick därefter vidare med MixerLab-relaterad testning. Arbetade med felhantering i `MixService`, uppdaterade `MixServiceTest` och kompletterade `MixControllerTest` med HTTP 400- och 404-tester. Granskade även `MixEq.java`. Avslutade med att skapa och pusha commit `eef2d98e4` till GitHub.
 
 ## Sammanfattning av dagen
 
@@ -520,8 +589,24 @@ Arbetsdagen inleddes med ett daily sprint/scrum-möte tillsammans med Johan Hell
 
 Under mötets fortsättning frågade jag Johan om tester för `UserService`, och han bekräftade att jag skulle skapa dessa.
 
-Efter mötet påbörjade jag arbetet med en generell testklass, `UserServiceTest.java`. Jag granskade befintlig kod och teststruktur och implementerade därefter 13 tester som täcker användarhantering, medlemskap, Free Trial och uppdatering av användarroller.
+Efter mötet påbörjade jag arbetet med `UserServiceTest.java`. Jag granskade befintlig kod och teststruktur och implementerade 13 tester som täcker användarhantering, medlemskap, Free Trial och uppdatering av användarroller.
 
 Under arbetet uppstod några testfel som krävde att jag undersökte den bakomliggande logiken i `UserService` och `User`. Jag kunde identifiera orsakerna, komplettera testdatan och få testerna att fungera.
 
-Arbetet med `UserServiceTest` är påbörjat och kommer att fortsätta. Ett av dagens planerade mål är även att hinna börja undersöka frontend-integreringen för MixerLab.
+Senare fortsatte jag med MixerLab-relaterad testning. Jag förbättrade felhanteringen i `MixService` genom att införa `MixNotFoundException` när en mix inte hittas. Jag uppdaterade även tillhörande tester.
+
+I `MixControllerTest` lade jag till tester för HTTP 400 och HTTP 404. Testerna kontrollerar att API:et returnerar rätt statuskoder när en mix saknas eller när användaren försöker skapa eller uppdatera en mix med ett tomt namn.
+
+Dagens verifierade testresultat omfattar:
+
+- `UserServiceTest`: 13 tester verifierade.
+- `MixServiceTest`: 15 tester godkända.
+- `MixControllerTest`: 8 tester godkända.
+
+Jag avslutade arbetet med att granska ändringarna, skapa commit `eef2d98e4` och pusha den till `feature/mixerlab-database-persistence-java` på GitHub. Pushen genomfördes utan problem.
+
+Slutligen granskade jag `MixEq.java` och identifierade att valideringsregler saknas för dess åtta fält. Nästa steg blir att undersöka vilka värdeintervall frontendens reglage använder innan valideringen implementeras.
+
+Dagens arbete har framför allt gett mig mer erfarenhet av testning, felsökning, felhantering och Git.
+
+--

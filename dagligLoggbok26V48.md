@@ -392,3 +392,43 @@ Jag valde att avvakta med ändringar kring JWT-subject tills jag har stämt av f
 Dagen avslutades efter en genomgång av de återstående förbättringarna. Nästa steg blir att fortsätta arbetet med felhantering och kompletterande tester för MixerLab.
 
 --
+
+# LIA-loggbok – Onsdag 25 november 2026
+
+## 1. Arbetsuppgifter
+
+- Dagen inleddes med ett daily sprint/scrum-möte via video.
+- En genomgång av MixerLab var planerad, men kunde inte genomföras som tänkt eftersom Nisse inte deltog.
+- Förberedde mig inför mötets fortsättning.
+- Frågade Johan Hellberg om jag skulle skapa tester för `UserService`. Johan bekräftade att jag skulle göra det.
+- Nisse deltog fortfarande inte när mötet fortsatte.
+
+## 2. Tekniker och verktyg
+
+- Videomöte.
+- Daily sprint/scrum.
+- Java och enhetstester för `UserService` (planerad arbetsuppgift).
+
+## 3. Problem och lösningar
+
+- Den planerade genomgången av MixerLab kunde inte genomföras eftersom Nisse inte deltog.
+- Johan gav besked om att jag ska skapa tester för `UserService`.
+
+## 4. Ny kunskap
+
+- Fick bekräftat av Johan att tester för `UserService` ska skapas.
+
+## 5. Reflektion
+
+- Fylls i när arbetsdagen är avslutad.
+
+## Arbetstid
+
+- **09:30–09:50:** Daily sprint/scrum via videomöte med Johan Hellberg, Clara Westberg, Ellinor Höijer, Sakarias Eriksson och Nikola Mirosavljevic. En genomgång av MixerLab var planerad, men Nisse deltog inte. Mötet skulle fortsätta kl. 10:00.
+- **09:50–10:00:** Förberedde mig inför mötets fortsättning.
+- **10:00–10:20:** Mötet fortsatte. Frågade Johan om `UserServiceTest`. Johan sa att jag skulle skapa tester för det. Nisse deltog fortfarande inte.
+- **Från 10:20:** Ej dokumenterat ännu.
+
+## Sammanfattning av dagen
+
+Arbetsdagen inleddes med ett daily sprint/scrum-möte där en genomgång av MixerLab var planerad. Eftersom Nisse inte deltog kunde genomgången inte genomföras. Under mötets fortsättning frågade jag Johan om tester för `UserService`, och han bekräftade att jag skulle skapa dessa.

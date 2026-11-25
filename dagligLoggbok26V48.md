@@ -364,6 +364,10 @@ Jag identifierade flera möjliga förbättringar men valde att inte genomföra k
 
 Arbetet har gett mig bättre förståelse för hur kodgranskning, säkerhet, automatiserade tester, databasmigrationer och versionshantering tillsammans bidrar till en mer tillförlitlig backend.
 
+Mot slutet av arbetsdagen märkte jag att jag började bli mentalt trött och hade svårt att tänka klart. Jag var nära att glömma att jag arbetade i en separat Git-branch. Det blev en påminnelse om hur viktigt det är att hålla koll på vilken branch jag arbetar i innan jag gör ändringar eller genomför Git-kommandon.
+
+Jag tar också med mig att det är viktigt att ta pauser och inte pressa mig för länge när koncentrationen börjar försämras.
+
 Jag avslutade arbetsdagen när jag började tappa orken. Nästa arbetsdag kan jag fortsätta med felhanteringen och de återstående granskningspunkterna.
 
 ## Arbetstid

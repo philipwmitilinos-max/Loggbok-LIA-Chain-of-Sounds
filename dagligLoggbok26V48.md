@@ -406,33 +406,122 @@ Dagen avslutades efter en genomgång av de återstående förbättringarna. Näs
 - Förberedde mig inför mötets fortsättning.
 - Frågade Johan Hellberg om jag skulle skapa tester för `UserService`. Johan bekräftade att jag skulle göra det.
 - Nisse deltog fortfarande inte när mötet fortsatte.
+- Efter mötet påbörjade jag arbetet med att skapa en generell testklass för `UserService`.
+- Granskade den befintliga klassen `UserService.java` för att identifiera vilka metoder och funktioner som behöver testas.
+- Granskade `UserServiceSubscriptionDeletedTest.java` för att följa projektets befintliga struktur för enhetstester med JUnit 5, Mockito och AssertJ.
+- Skapade `UserServiceTest.java` med mockade beroenden för `UserRepo` och `StripeSubscriptionService`.
+- Implementerade och verifierade tester för följande funktioner:
+  - Hämta en befintlig användare.
+  - Skapa en ny användare om den inte finns.
+  - Tilldela standardrollen `USER` när användaren saknar roller.
+  - Tilldela standardrollen `USER` när användarens roller är `null`.
+  - Aktivera Premium-medlemskap.
+  - Aktivera Supporter-medlemskap.
+  - Aktivera Founders Circle-medlemskap.
+  - Aktivera en kostnadsfri provperiod (Free Trial).
+  - Förhindra att en användare aktiverar Free Trial flera gånger.
+  - Förhindra att en användare med ett aktivt betalt medlemskap aktiverar Free Trial.
+  - Uppdatera en användares roller.
+  - Tilldela standardrollen `USER` när en tom rollista skickas in.
+  - Tilldela standardrollen `USER` när rollistan är `null`.
+- Undersökte varför ett test för redan använt Free Trial misslyckades. Upptäckte att testanvändaren saknade roller, vilket gjorde att `getOrCreateUserBySubject()` sparade användaren innan undantaget kastades. Kompletterade testdata med standardrollen `USER`.
+- Undersökte varför testet för att förhindra Free Trial för betalande användare misslyckades. Granskade `hasPaidMembership()` och `hasActiveMembershipIn()` i `User.java`.
+- Upptäckte att ett aktivt betalt medlemskap kräver att medlemskapet tillhör `PAID_TIERS`, att `paidAt` inte är `null` och att medlemskapet inte har gått ut.
+- Kompletterade testdata med betalningsdatum och ett framtida utgångsdatum. Därefter gick testet igenom.
 
 ## 2. Tekniker och verktyg
 
-- Videomöte.
-- Daily sprint/scrum.
-- Java och enhetstester för `UserService` (planerad arbetsuppgift).
+- Java.
+- Spring Boot.
+- JUnit 5.
+- Mockito.
+- AssertJ.
+- IntelliJ IDEA.
+- Maven.
+- Git och GitHub.
+- Enhetstestning och mockning.
+- `UserService`.
+- `UserRepo`.
+- `StripeSubscriptionService`.
 
 ## 3. Problem och lösningar
 
-- Den planerade genomgången av MixerLab kunde inte genomföras eftersom Nisse inte deltog.
-- Johan gav besked om att jag ska skapa tester för `UserService`.
+### Testning av aktivering av Premium-medlemskap
+
+Vid testning av `activatePremiumMembership()` fick jag ett Mockito-fel eftersom `userRepo.save()` anropades två gånger i stället för en gång.
+
+**Lösning:**
+
+Undersökte hur metoden fungerar och upptäckte att det första anropet sker när användaren skapas och det andra när medlemskapet aktiveras. Ändrade därför verifieringen till `times(2)`.
+
+### Testning av redan använd Free Trial
+
+Ett test för att förhindra att en användare aktiverar Free Trial flera gånger misslyckades eftersom `userRepo.save()` anropades trots att testet förväntade sig att det inte skulle ske.
+
+**Lösning:**
+
+Upptäckte att testanvändaren saknade roller. `getOrCreateUserBySubject()` tilldelade därför standardrollen `USER` och sparade användaren innan kontrollen av provperioden genomfördes.
+
+Kompletterade testanvändaren med en befintlig roll. Därefter fungerade testet som förväntat.
+
+### Testning av betalt medlemskap
+
+Ett test för att förhindra Free Trial för användare med ett aktivt betalt medlemskap misslyckades eftersom inget undantag kastades.
+
+**Lösning:**
+
+Granskade `hasPaidMembership()` och upptäckte att metoden även kontrollerar `paidAt` och medlemskapets utgångsdatum.
+
+Kompletterade testdata med ett betalningsdatum och ett framtida utgångsdatum. Därefter fungerade testet.
+
+### Mockito-varningar
+
+Under testkörningarna visades varningar om att Mockito laddar sin Java-agent dynamiskt. Varningarna handlar om framtida kompatibilitet med JDK och är inte orsaken till att testerna misslyckades.
+
+Detta har noterats för eventuell undersökning senare.
 
 ## 4. Ny kunskap
 
-- Fick bekräftat av Johan att tester för `UserService` ska skapas.
+- Fördjupat kunskapen om hur man bygger en generell testklass för en serviceklass.
+- Arbetat vidare med JUnit 5, Mockito och AssertJ.
+- Fått bättre förståelse för hur mockade repositories används för att testa serviceklasser utan en riktig databas.
+- Lärt mig mer om hur `verify()` och `times()` används för att kontrollera antalet metodanrop.
+- Fördjupat förståelsen för hur `getOrCreateUserBySubject()` fungerar och hur användarens standardroller hanteras.
+- Lärt mig att testdata behöver uppfylla samtliga villkor i den faktiska affärslogiken.
+- Fördjupat förståelsen för hur `hasPaidMembership()` kontrollerar medlemskap, betalningsdatum och utgångsdatum.
+- Fått mer erfarenhet av att felsöka misslyckade enhetstester genom att följa anropskedjan i serviceklasserna.
 
 ## 5. Reflektion
 
-- Fylls i när arbetsdagen är avslutad.
+Dagen har hittills handlat mycket om att bygga upp testtäckningen för `UserService`.
+
+Jag började med att undersöka den befintliga teststrukturen och skapade därefter en separat testklass. Arbetet har varit stegvis där jag har implementerat ett test i taget och kontrollerat att det fungerar innan jag gått vidare.
+
+Under arbetet stötte jag på några problem där testerna inte fungerade som förväntat. Genom att undersöka den befintliga koden kunde jag förstå varför metoderna anropades och vilka villkor som behövde uppfyllas i testdata.
+
+En viktig lärdom är att det inte alltid är själva testet som är fel när ett test misslyckas. Ibland behöver man förstå den bakomliggande affärslogiken bättre.
+
+Jag har hittills implementerat 13 tester och fått bättre förståelse för hur man testar serviceklasser med Mockito och AssertJ.
+
+Nästa steg är att fortsätta komplettera testerna för `UserService` och därefter börja undersöka hur MixerLab ska integreras med Java-backenden via frontendens API.
 
 ## Arbetstid
 
 - **09:30–09:50:** Daily sprint/scrum via videomöte med Johan Hellberg, Clara Westberg, Ellinor Höijer, Sakarias Eriksson och Nikola Mirosavljevic. En genomgång av MixerLab var planerad, men Nisse deltog inte. Mötet skulle fortsätta kl. 10:00.
 - **09:50–10:00:** Förberedde mig inför mötets fortsättning.
 - **10:00–10:20:** Mötet fortsatte. Frågade Johan om `UserServiceTest`. Johan sa att jag skulle skapa tester för det. Nisse deltog fortfarande inte.
-- **Från 10:20:** Ej dokumenterat ännu.
+- **10:20-12:05** Arbetade med att skapa `UserServiceTest`, granska befintlig servicekod och implementera samt felsöka enhetstester. Hittills har 13 tester implementerats och verifierats.
+- **12:05-12:45** Lunch.
+- **12:45** Fortsätter med `UserServiceTest`.
 
 ## Sammanfattning av dagen
 
-Arbetsdagen inleddes med ett daily sprint/scrum-möte där en genomgång av MixerLab var planerad. Eftersom Nisse inte deltog kunde genomgången inte genomföras. Under mötets fortsättning frågade jag Johan om tester för `UserService`, och han bekräftade att jag skulle skapa dessa.
+Arbetsdagen inleddes med ett daily sprint/scrum-möte tillsammans med Johan Hellberg, Clara Westberg, Ellinor Höijer, Sakarias Eriksson och Nikola Mirosavljevic. En genomgång av MixerLab var planerad, men eftersom Nisse inte deltog kunde den inte genomföras.
+
+Under mötets fortsättning frågade jag Johan om tester för `UserService`, och han bekräftade att jag skulle skapa dessa.
+
+Efter mötet påbörjade jag arbetet med en generell testklass, `UserServiceTest.java`. Jag granskade befintlig kod och teststruktur och implementerade därefter 13 tester som täcker användarhantering, medlemskap, Free Trial och uppdatering av användarroller.
+
+Under arbetet uppstod några testfel som krävde att jag undersökte den bakomliggande logiken i `UserService` och `User`. Jag kunde identifiera orsakerna, komplettera testdatan och få testerna att fungera.
+
+Arbetet med `UserServiceTest` är påbörjat och kommer att fortsätta. Ett av dagens planerade mål är även att hinna börja undersöka frontend-integreringen för MixerLab.

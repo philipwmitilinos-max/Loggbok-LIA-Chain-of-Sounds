@@ -615,48 +615,194 @@ Dagens arbete har framför allt gett mig mer erfarenhet av testning, felsökning
 
 ## 1. Arbetsuppgifter
 
+### Daily sprint/scrum
+
 - Dagen inleddes med ett kort daily sprint/scrum-möte via video med Clara Westberg och Ellinor Höijer.
 - Johan Hellberg deltog inte i mötet, vilket gjorde att mötet blev kortare än vanligt.
-- Informerade om att jag på fredagen den 27 november kommer att vara i skolan för en muntlig redovisning av min LIA, där jag ska berätta hur arbetet har gått.
+- Informerade om att jag på fredagen den 27 november kommer att vara i skolan för en muntlig redovisning av min LIA, där jag ska berätta hur arbetet har gått under LIA-perioden.
+
+### Fortsatt arbete med MixerLab
+
 - Efter mötet fortsatte jag med arbetet från föregående arbetsdag.
-- Fortsatt arbete med MixerLab och de förbättringar som identifierades under granskningen från GitHub Copilot.
+- Arbetet handlar om att förbättra och kvalitetssäkra Java-backendens hantering av MixerLab-mixes.
+- Fortsatte att använda GitHub Copilots tidigare kodgranskning som underlag för att identifiera återstående problem och förbättringar.
+
+### Ny Code Review från GitHub Copilot
+
+Efter den senaste committen `eef2d98e4` genomfördes ytterligare en Code Review med GitHub Copilot.
+
+Granskningen innehöll 13 punkter med problem och förbättringsförslag. Copilot bekräftade även att flera av de tidigare identifierade problemen har åtgärdats.
+
+Följande punkter identifierades:
+
+1. **Cross-user authorization:** Integrationstesterna behöver bevisa att användare B inte kan uppdatera eller ta bort användare A:s mix.
+2. **JWT subject:** `jwt.getSubject()` används direkt. Subject behöver valideras så att null eller tomma värden inte kan användas för att skapa eller hämta användare.
+3. **Säkerhet i MixController:** Alla fyra endpoints behöver ha konsekvent autentiseringsskydd, antingen genom uttryckliga säkerhetsregler eller genom verifiering av den globala säkerhetskonfigurationen.
+4. **404 och 403:** Saknade mixes och mixes som tillhör andra användare behandlas på samma sätt. Detta kan vara ett medvetet säkerhetsval för att inte avslöja andra användares resurser.
+5. **EQ-validering:** De åtta EQ-fälten saknar begränsningar för tillåtna värden.
+6. **Track-ordning:** `@ElementCollection` garanterar inte att ordningen på tracks bevaras. `@OrderColumn` kan behövas.
+7. **Transaktionshantering:** `MixService` saknar uttryckliga transaktionsgränser.
+8. **Valideringsfel:** Standardfel från `@Valid` kan ha ett annat JSON-format än projektets egen `ErrorResponse`.
+9. **Felmeddelanden:** `MixNotFoundException` använder meddelandet `"Mix not found"` i stället för ett mer informativt meddelande som innehåller mixens ID.
+10. **Dubbla track IDs:** Databastabellen har ingen unik begränsning för kombinationen `(mix_id, track_id)`.
+11. **Migrationstest:** Testet verifierar en färsk databasschemautgång men inte en uppgradering genom hela den verkliga migrationshistoriken.
+12. **Schema validation:** `spring.jpa.hibernate.ddl-auto=validate` innebär att applikationen inte startar om entiteterna och databasschemat inte överensstämmer.
+13. **Testkvalitet:** Copilot identifierade mindre förbättringar, bland annat ett stavfel i ett testsubject (`mix-delete-test-uset`) och användning av null-DTO:er i vissa service-tester.
+
+### Förbättringar som Copilot bekräftade
+
+Copilot bekräftade att följande förbättringar redan är genomförda:
+
+- Saknade mixes hanteras med `MixNotFoundException`.
+- Update och delete returnerar HTTP 404 i stället för generella RuntimeException-fel.
+- Tomma mixnamn avvisas genom validering.
+- `MixNotFoundException` hanteras av den globala `ApiExceptionHandler`.
+- `UserService` har fått bredare enhetstestning för användarhantering, medlemskap, Free Trial och uppdatering av roller.
+
+### Planering av fortsatt arbete
+
+Efter granskningen identifierades säkerhet och JWT-hantering som de viktigaste återstående områdena.
+
+Nästa steg är att granska `MixIT.java` för att undersöka vilka integrationstester som redan finns och vad som behöver kompletteras.
+
+Målet är att verifiera följande:
+
+- Användare A skapar en mix.
+- Användare B försöker hämta användare A:s mix.
+- Användare B försöker uppdatera användare A:s mix.
+- Användare B försöker ta bort användare A:s mix.
+
+Ingen ny implementation av dessa tester är ännu verifierad.
 
 ## 2. Tekniker och verktyg
 
 - Java.
 - Spring Boot.
+- Spring Security.
+- JWT-autentisering.
+- Spring Data JPA.
+- Hibernate.
+- PostgreSQL.
+- Flyway.
 - JUnit 5.
 - Mockito.
+- AssertJ.
+- MockMvc.
+- Testcontainers.
 - IntelliJ IDEA.
 - Maven.
 - Git och GitHub.
+- GitHub Copilot Code Review.
+- `MixController`.
 - `MixService`.
+- `MixIT`.
 - `MixControllerTest`.
+- `MixServiceTest`.
 - `MixEq`.
+- `UserService`.
+- `MixNotFoundException`.
+- `ApiExceptionHandler`.
 
 ## 3. Problem och lösningar
 
-Arbetet från föregående dag fortsätter. Inga nya problem eller lösningar har dokumenterats ännu.
+### Cross-user authorization
+
+GitHub Copilot identifierade att det fortfarande saknas tillräckliga integrationstester som bevisar att en användare inte kan uppdatera eller ta bort en annan användares mix.
+
+`MixService` använder `findByIdAndUserId`, vilket är bra eftersom sökningen tar hänsyn till både mixens ID och användarens ID.
+
+**Återstår:**
+
+Granska `MixIT.java` och komplettera testerna för att verifiera att användare B inte kan ändra eller ta bort användare A:s mix.
+
+### JWT subject och användarskapande
+
+Copilot identifierade att `jwt.getSubject()` används direkt i `MixController`.
+
+**Återstår:**
+
+Undersöka hur `UserService` hanterar null eller tomma subjects och säkerställa att ogiltiga värden avvisas innan användaruppslagning eller användarskapande.
+
+### EQ-validering
+
+`MixEq.java` innehåller åtta fält utan uttryckliga valideringsintervall.
+
+**Återstår:**
+
+Undersöka vilka värden MixerLabs frontend använder innan valideringsregler implementeras. Detta är viktigt för att undvika att backend avvisar giltiga värden från frontend.
+
+### Track-ordning
+
+Copilot uppmärksammade att ordningen på tracks inte uttryckligen bevaras i databasen.
+
+**Återstår:**
+
+Undersöka om track-ordningen är viktig för uppspelning och återställning av en mix. Om den är viktig behöver en lösning med exempelvis `@OrderColumn` utredas.
+
+### Transaktionshantering
+
+`MixService` saknar uttryckliga `@Transactional`-annoteringar.
+
+**Återstår:**
+
+Granska vilka service-metoder som behöver transaktionshantering, framför allt uppdatering, borttagning och hämtning av collections.
+
+### Övriga identifierade problem
+
+Copilot identifierade även följande områden som behöver undersökas:
+
+- Konsekvent JSON-format för valideringsfel.
+- Mer informativa felmeddelanden.
+- Eventuella begränsningar mot dubbla track IDs.
+- Migrationstest mot verklig migrationshistorik.
+- Överensstämmelse mellan Hibernate-entiteter och databasschema.
+- Mindre förbättringar i befintliga tester.
+
+Dessa punkter är ännu inte åtgärdade eller verifierade.
 
 ## 4. Ny kunskap
 
-Kompletteras under arbetsdagen utifrån dagens arbete och eventuella nya erfarenheter.
+- Fördjupat förståelsen för hur GitHub Copilot kan användas för att genomföra upprepade Code Reviews av en pull request.
+- Fått en tydligare bild av skillnaden mellan att testa service-logik med mockade beroenden och att verifiera säkerheten genom integrationstester.
+- Fördjupat förståelsen för varför användarens JWT-subject behöver valideras innan det används för att hämta eller skapa användardata.
+- Fått bättre förståelse för hur `findByIdAndUserId` kan användas för att begränsa åtkomst till användarägda resurser.
+- Uppmärksammat skillnaden mellan HTTP 403 och HTTP 404 och hur valet av statuskod kan påverka informationsläckage.
+- Fördjupat förståelsen för hur JPA hanterar `@ElementCollection` och varför ordningen i en lista behöver hanteras uttryckligen om den är viktig.
+- Fått mer kunskap om varför transaktionshantering är viktig vid databasoperationer.
+- Uppmärksammat vikten av att ha ett konsekvent API-format för valideringsfel.
+- Fått en bättre överblick över vilka delar av MixerLab-persistensen som fortfarande behöver kvalitetssäkras.
 
 ## 5. Reflektion
 
-Dagen inleddes med ett kort daily sprint/scrum-möte. Fokus för arbetsdagen är att fortsätta med det pågående arbetet från onsdagen, framför allt de återstående punkterna från GitHub Copilots kodgranskning.
+Dagens arbete har fortsatt med kvalitetssäkring av MixerLab-persistensen i Java-backenden.
 
-Imorgon, fredag 27 november, ska jag vara i skolan för en muntlig redovisning av min LIA. Där ska jag berätta om arbetet jag har genomfört och hur det har gått under LIA-perioden.
+Den nya Code Review-granskningen från GitHub Copilot var användbar eftersom den bekräftade att flera av de tidigare problemen har åtgärdats. Framför allt har felhanteringen för saknade mixes förbättrats och testerna för validering av mixnamn har kompletterats.
+
+Samtidigt visar granskningen att det fortfarande finns viktiga områden att arbeta med, särskilt säkerheten kring användarnas mixes.
+
+Jag tycker att det är viktigt att inte bara kontrollera att metoderna fungerar när rätt användare gör ett anrop, utan även att verifiera att andra användare inte kan komma åt eller ändra information som de inte äger.
+
+Nästa steg blir därför att granska de befintliga integrationstesterna i `MixIT.java` innan några ändringar görs.
+
+Jag behöver också fortsätta undersöka hur MixerLabs frontend hanterar EQ-värden och track-ordning så att backendens validering och databasmodell överensstämmer med frontendens funktionalitet.
 
 ## Arbetstid
 
-- **09:30–09:35:** Daily sprint/scrum via videomöte med Clara Westberg och Ellinor Höijer. Johan Hellberg deltog inte, vilket gjorde att mötet blev kort. Informerade om att jag på fredagen den 27 november ska vara i skolan för muntlig redovisning av min LIA.
-- **09:35–pågående:** Fortsätter med arbetet från föregående arbetsdag.
+- **09:30–09:35:** Daily sprint/scrum via videomöte med Clara Westberg och Ellinor Höijer. Johan Hellberg deltog inte i mötet, vilket gjorde att mötet blev kort. Informerade om att jag på fredagen den 27 november ska vara i skolan för en muntlig redovisning av min LIA.
+- **09:35–pågående:** Fortsätter med arbetet från föregående arbetsdag. Arbetet omfattar fortsatt kvalitetssäkring av MixerLab-persistensen och genomgång av GitHub Copilots senaste Code Review.
 
 ## Sammanfattning av dagen
 
 Arbetsdagen inleddes med ett kort daily sprint/scrum-möte via video med Clara Westberg och Ellinor Höijer. Johan Hellberg deltog inte vid mötet. Under mötet informerade jag om att jag på fredagen den 27 november kommer att vara i skolan för en muntlig redovisning av min LIA.
 
-Efter mötet fortsatte jag med arbetet från föregående dag. Dagens fortsatta arbetsuppgifter och resultat dokumenteras löpande.
+Efter mötet fortsatte jag med arbetet från föregående arbetsdag och gick vidare med den senaste Code Review-granskningen från GitHub Copilot.
+
+Granskningen genomfördes efter commit `eef2d98e4` och innehöll 13 punkter med problem och förbättringsförslag. Copilot bekräftade att flera tidigare identifierade problem har åtgärdats, bland annat hanteringen av `MixNotFoundException`, HTTP 404 vid saknade mixes och valideringen av tomma mixnamn.
+
+De viktigaste återstående problemen handlar om cross-user authorization, JWT-subject, konsekvent säkerhet i controllern, EQ-validering, track-ordning och transaktionshantering.
+
+Nästa planerade steg är att granska `MixIT.java` för att se hur integrationstesterna kan kompletteras så att det bevisas att en användare inte kan uppdatera eller ta bort en annan användares mix.
+
+Dagens arbete fortsätter.
 
 --

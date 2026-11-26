@@ -610,3 +610,53 @@ Slutligen granskade jag `MixEq.java` och identifierade att valideringsregler sak
 Dagens arbete har framför allt gett mig mer erfarenhet av testning, felsökning, felhantering och Git.
 
 --
+
+# LIA-loggbok – Torsdag 26 november 2026
+
+## 1. Arbetsuppgifter
+
+- Dagen inleddes med ett kort daily sprint/scrum-möte via video med Clara Westberg och Ellinor Höijer.
+- Johan Hellberg deltog inte i mötet, vilket gjorde att mötet blev kortare än vanligt.
+- Informerade om att jag på fredagen den 27 november kommer att vara i skolan för en muntlig redovisning av min LIA, där jag ska berätta hur arbetet har gått.
+- Efter mötet fortsatte jag med arbetet från föregående arbetsdag.
+- Fortsatt arbete med MixerLab och de förbättringar som identifierades under granskningen från GitHub Copilot.
+
+## 2. Tekniker och verktyg
+
+- Java.
+- Spring Boot.
+- JUnit 5.
+- Mockito.
+- IntelliJ IDEA.
+- Maven.
+- Git och GitHub.
+- `MixService`.
+- `MixControllerTest`.
+- `MixEq`.
+
+## 3. Problem och lösningar
+
+Arbetet från föregående dag fortsätter. Inga nya problem eller lösningar har dokumenterats ännu.
+
+## 4. Ny kunskap
+
+Kompletteras under arbetsdagen utifrån dagens arbete och eventuella nya erfarenheter.
+
+## 5. Reflektion
+
+Dagen inleddes med ett kort daily sprint/scrum-möte. Fokus för arbetsdagen är att fortsätta med det pågående arbetet från onsdagen, framför allt de återstående punkterna från GitHub Copilots kodgranskning.
+
+Imorgon, fredag 27 november, ska jag vara i skolan för en muntlig redovisning av min LIA. Där ska jag berätta om arbetet jag har genomfört och hur det har gått under LIA-perioden.
+
+## Arbetstid
+
+- **09:30–09:35:** Daily sprint/scrum via videomöte med Clara Westberg och Ellinor Höijer. Johan Hellberg deltog inte, vilket gjorde att mötet blev kort. Informerade om att jag på fredagen den 27 november ska vara i skolan för muntlig redovisning av min LIA.
+- **09:35–pågående:** Fortsätter med arbetet från föregående arbetsdag.
+
+## Sammanfattning av dagen
+
+Arbetsdagen inleddes med ett kort daily sprint/scrum-möte via video med Clara Westberg och Ellinor Höijer. Johan Hellberg deltog inte vid mötet. Under mötet informerade jag om att jag på fredagen den 27 november kommer att vara i skolan för en muntlig redovisning av min LIA.
+
+Efter mötet fortsatte jag med arbetet från föregående dag. Dagens fortsatta arbetsuppgifter och resultat dokumenteras löpande.
+
+--

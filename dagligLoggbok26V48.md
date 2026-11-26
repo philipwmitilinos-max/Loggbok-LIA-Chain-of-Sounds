@@ -611,489 +611,129 @@ Dagens arbete har framför allt gett mig mer erfarenhet av testning, felsökning
 
 --
 
-# LIA-loggbok – Torsdag 26 november 2026
+# Daglig LIA-loggbok – Torsdag 26 november 2026
 
 ## 1. Arbetsuppgifter
 
-### Daily sprint/scrum
-
-- Dagen inleddes med ett kort daily sprint/scrum-möte via video med Clara Westberg och Ellinor Höijer.
-- Johan Hellberg deltog inte i mötet, vilket gjorde att mötet blev kortare än vanligt.
-- Informerade om att jag på fredagen den 27 november kommer att vara i skolan för en muntlig redovisning av min LIA, där jag ska berätta hur arbetet har gått under LIA-perioden.
-
-### Fortsatt arbete med MixerLab
-
-- Fortsatte med arbetet från föregående arbetsdag.
-- Arbetet omfattade fortsatt kvalitetssäkring av Java-backendens hantering av MixerLab-mixes.
-- Fortsatte att använda GitHub Copilots tidigare kodgranskningar som underlag för att identifiera återstående problem och förbättringar.
-
-### Fortsatt arbete med integrationstester i MixIT
-
-Arbetet fortsatte med att komplettera integrationstesterna i `MixIT.java` för att verifiera att användare inte kan ändra andra användares mixes.
-
-Följande tester lades till:
-
-1. `updateMix_shouldThrowExceptionWhenMixBelongsToAnotherUser()`
-   - Testar att användare B inte kan uppdatera en mix som tillhör användare A.
-   - Kontrollerar att `MixNotFoundException` kastas.
-   - Kontrollerar att mixens ursprungliga information fortfarande är oförändrad.
-
-2. `deleteMix_shouldThrowExceptionWhenMixBelongsToAnotherUser()`
-   - Testar att användare B inte kan ta bort en mix som tillhör användare A.
-   - Kontrollerar att `MixNotFoundException` kastas.
-   - Kontrollerar att mixen fortfarande finns kvar i databasen och att informationen är oförändrad.
-
-Under arbetet uppstod ett `LazyInitializationException` när testet för uppdatering försökte läsa `trackIds` efter att Hibernate-sessionen hade stängts.
-
-Problemet löstes genom att lägga till `@Transactional` på testmetoden. Därefter kunde samlingen läsas under testets körning.
-
-Båda de nya integrationstesterna kördes och godkändes:
-
-- Uppdatering av en annan användares mix: 1 test, 0 failures och 0 errors.
-- Borttagning av en annan användares mix: 1 test, 0 failures och 0 errors.
-
-Det befintliga testet `deleteMix_shouldRemoveMixFromDatabase()` kontrollerades också och fungerade som det skulle.
-
-Ett tidigare stavfel i testsubjectet `mix-delete-test-uset` rättades till `mix-delete-test-user`.
-
-### Commit och push av MixIT
-
-Efter att testerna hade verifierats committades ändringarna.
-
-- Commit: `e7431caaf`
-- Commit-meddelande: `test: add mix ownership integration tests`
-- Ändrad fil: `MixIT.java`
-- Ändringar: 66 insertions och 2 deletions.
-- Committen pushades framgångsrikt till `feature/mixerlab-database-persistence-java`.
-
-### Validering av JWT-subject i UserService
-
-Efter arbetet med integrationstesterna fortsatte jag med Copilots synpunkt om att JWT-subject inte validerades innan det användes för att hämta eller skapa användare.
-
-Granskade `MixController.java` och `UserService.java`.
-
-I `MixController` hämtas subject direkt från JWT med `jwt.getSubject()` och skickas vidare till `MixService`.
-
-I `UserService` identifierades att metoden `getOrCreateUserBySubject()` saknade en kontroll av subject innan databassökningen genomfördes.
-
-En validering lades därför till med `StringUtils.hasText(subject)`.
-
-Om subject är null, tomt eller endast innehåller blanksteg kastas nu `IllegalArgumentException` innan något databasanrop görs.
-
-### Utökning av UserServiceTest
-
-För att verifiera den nya valideringen lades tre nya enhetstester till i `UserServiceTest.java`:
-
-1. `getOrCreateUserBySubject_shouldThrowExceptionWhenSubjectIsNull()`
-2. `getOrCreateUserBySubject_shouldThrowExceptionWhenSubjectIsEmpty()`
-3. `getOrCreateUserBySubject_shouldThrowExceptionWhenSubjectContainsOnlyWhitespace()`
-
-Testerna kontrollerar både att rätt undantag kastas och att `UserRepo` inte kontaktas när subject är ogiltigt.
-
-Vid den första testkörningen förväntade sig testerna `IllegalStateException`, medan produktionskoden korrekt kastade `IllegalArgumentException`.
-
-Detta rättades genom att uppdatera förväntningarna i de tre testerna. Produktionskoden behövde inte ändras.
-
-Därefter kördes hela `UserServiceTest` med följande resultat:
-
-- 16 tester körda.
-- 0 failures.
-- 0 errors.
-- 0 skipped.
-- BUILD SUCCESS.
-
-### Commit och push av JWT-validering
-
-Efter att samtliga tester hade godkänts committades ändringarna.
-
-- Commit: `8f5489a67`
-- Commit-meddelande: `fix: validate JWT subject before user lookup`
-- Ändrade filer:
-  - `UserService.java`
-  - `UserServiceTest.java`
-- Ändringar: 32 insertions.
-- Committen pushades framgångsrikt till `feature/mixerlab-database-persistence-java`.
-
-### Ny Code Review från GitHub Copilot
-
-Efter commit `8f5489a67` bad jag GitHub Copilot att genomföra ytterligare en Code Review av PR #265.
-
-Copilot bedömde den senaste committen som en fokuserad förbättring med låg risk.
-
-Följande bekräftades:
-
-- `UserService` avvisar null, tomma och blankstegsbaserade subjects.
-- Ogiltiga subjects stoppas innan databasanrop.
-- Tester täcker samtliga tre situationer.
-- Inga nya uppenbara blockerande problem identifierades.
-
-Copilot uppmärksammade även att `IllegalArgumentException` redan hanteras av `ApiExceptionHandler` och returnerar HTTP 400.
-
-En möjlig förbättring är att använda ett särskilt autentiseringsundantag om ogiltiga JWT-subjects ska behandlas som autentiseringsproblem i stället för vanliga klientfel.
-
-Copilot påpekade också att följande områden fortfarande behöver undersökas:
-
-- Konsekvent autentiseringsskydd för alla endpoints i `MixController`.
-- HTTP-tester som verifierar att oautentiserade anrop till create, update och delete avvisas.
-- Testning av cross-user authorization genom HTTP och JWT.
-- Validering av EQ-värden.
-- Bevarande av track-ordning i databasen.
-
-Copilot kunde se att sju CI-kontroller var slutförda, men kunde inte bekräfta om samtliga hade godkänts.
-
-Copilots bedömning var att PR #265 fortfarande inte är redo att mergas innan säkerhetskonfigurationen och HTTP-auktoriseringen har verifierats och övriga merge-krav är uppfyllda.
-
-### Undersökning av frontendintegrationen för MixerLab
-
-Under eftermiddagen började jag undersöka hur den befintliga React-frontendens API-struktur fungerar för att kunna koppla MixerLab till Java-backendens databaslösning.
-
-Målet var att förstå hur frontend kommunicerar med backend innan några kodändringar genomförs.
-
-Följande filer och delar av projektet granskades:
-
-- `frontend/src/api/mixer/mixer.client.ts`
-- `frontend/src/api/mixer/mixer.types.ts`
-- `frontend/src/api/mixer/index.ts`
-- `frontend/src/api/index.ts`
-- `frontend/src/hooks/useApiClient.ts`
-- `MixerLab.tsx`
-- `eqTypes.ts`
-- `BacktrackSelector.tsx`
-- `Backtracks/constants.ts`
-- `Tracks/constants.ts`
-
-Jag undersökte även andra React-komponenter som redan använder `useApiClient()`, bland annat:
-
-- `TracksSelector.tsx`
-- `BacktracksPage.tsx`
-- `AudioRecorder.tsx`
-- `StudioBass.tsx`
-- `MyRecordings.tsx`
-- `MyProfile.tsx`
-
-Syftet var att hitta ett befintligt arbetssätt för autentiserade API-anrop som kan återanvändas i MixerLab.
-
-### Genomgång av API-klientens struktur
-
-Jag hittade att projektet redan har en gemensam funktion, `createApiClient()`, som skapar och samlar projektets olika API-klienter.
-
-Mixer-klienten skapas genom `createMixerClient(getAccessToken)` och är redan kopplad till den gemensamma API-strukturen.
-
-Jag granskade även `useApiClient.ts` och konstaterade att hooken kopplar API-klienten till den aktuella Auth0-sessionen och tillhandahåller en access token för autentiserade backend-anrop.
-
-Därmed behöver vi inte skapa ett nytt system för API-kommunikation. Vi kan i stället utöka den befintliga mixer-klienten med funktioner för att hantera mixes.
-
-### Undersökning av befintlig MixerLab-lagring
-
-I `MixerLab.tsx` identifierades den nuvarande lösningen där mixinställningar sparas i webbläsarens `localStorage` med nyckeln `mixerlab_mix`.
-
-Den nuvarande lösningen sparar bland annat:
-
-- EQ-inställningar.
-- Vald backtrack.
-- Valda track-ID:n.
-
-Jag konstaterade att frontendens nuvarande `SavedMix`-struktur skiljer sig från Java-backendens DTO-struktur.
-
-Frontend saknar bland annat ett namn för mixen, medan Java-backendens `MixRequestDto` kräver ett namn.
-
-### Genomgång av Java-backendens DTO:er
-
-Jag gick igenom `MixRequestDto.java` och `MixResponseDto.java` för att jämföra frontendens nuvarande datamodell med backendens API-kontrakt.
-
-`MixRequestDto` innehåller:
-
-- `name`
-- `backtrackId`
-- `eq`
-- `trackIds`
-
-Namnet är obligatoriskt genom `@NotBlank` och listan med track-ID:n är obligatorisk genom `@NotNull`.
-
-`MixResponseDto` innehåller samma information samt ett `id` som identifierar den sparade mixen i databasen.
-
-Jag identifierade även att frontendens EQ-struktur behöver översättas till backendens `MixEq`-struktur innan data skickas till Java-backend.
-
-### Genomgång av track- och backtrack-ID:n
-
-Jag granskade `Tracks/constants.ts` och `Backtracks/constants.ts`.
-
-MixerLab använder stabila strängbaserade ID:n för sina tracks. Det innebär att frontend kan skicka dessa ID:n till Java-backendens `List<String> trackIds`.
-
-Jag konstaterade även att backtrack-ID:n behöver hanteras separat och att vi behöver säkerställa att de ID:n som frontend använder överensstämmer med vad backend förväntar sig.
-
-### Beslut om hur användaren ska hantera sparade mixes
-
-Vi diskuterade hur den färdiga funktionen ska fungera för användaren.
-
-Beslutet blev att användaren ska kunna spara flera olika mixes med egna namn, exempelvis:
-
-- Min rockmix
-- Jazzmix
-- Testmix
-
-Det innebär att MixerLab behöver stöd för att skapa, hämta, uppdatera och ta bort flera sparade mixes per användare.
-
-Vi kom också fram till att den befintliga `localStorage`-lösningen ska ersättas med databaslagring via Java-backend, så att sparade mixes finns kvar efter att sidan uppdateras eller webbläsaren stängs.
-
-Ingen frontendkod ändrades under denna undersökning. Arbetet avslutades med att identifiera hur integrationen bör byggas vidare med projektets befintliga API-struktur.
-
----
+- Deltog i dagens dagliga videomöte tillsammans med Clara Westberg och Ellinor Höijer. Johan deltog inte.
+- Berättade att jag ska hålla en muntlig LIA-redovisning på skolan fredagen den 27 november.
+- Fortsatte arbetet med att granska backend-implementationen för MixerLab och de tidigare kommentarerna från Copilots kodgranskning.
+- Arbetade vidare med integrationstester för att kontrollera att användare endast kan hantera sina egna sparade mixes.
+- Lade till tester som verifierar att en användare inte kan uppdatera eller ta bort en annan användares mix.
+- Lade till `@Transactional` på berörda integrationstester efter att ett `LazyInitializationException` uppstod vid åtkomst till `trackIds`.
+- Rättade ett fel i ett av testerna där felaktig testdata användes.
+- Verifierade att testerna för användarägarskap fungerade.
+- Skapade commit `e7431caaf` (`test: add mix ownership integration tests`) och pushade ändringen till GitHub.
+- Fortsatte granska hanteringen av JWT-subject i `UserService`.
+- Lade till validering med `StringUtils.hasText(subject)` för att kontrollera att JWT-subject inte är null, tom eller endast innehåller blanksteg.
+- Lade till tre tester för att verifiera valideringen av subject.
+- Körningen av `UserServiceTest` lyckades med 16 godkända tester.
+- Skapade commit `8f5489a67` (`fix: validate JWT subject before user lookup`) och pushade ändringen till GitHub.
+- Granskade Copilots senaste kodgranskning av Pull Request #265.
+- Konstaterade att den senaste granskningen inte identifierade något nytt blockerande problem i den senaste ändringen.
+- Fortsatte undersöka återstående frågor kring säkerhet, validering och databashantering.
+- Påbörjade undersökningen av frontend-integrationen för MixerLab.
+- Granskade `mixer.client.ts` och `mixer.types.ts` för att se hur frontend kommunicerar med Mixer-backend.
+- Granskade `MixerLab.tsx` och identifierade hur den nuvarande lösningen sparar mixinställningar i `localStorage`.
+- Identifierade att den nuvarande sparade mixen innehåller EQ-inställningar, backtrack-ID och track-ID:n, men saknar ett namn och ett databas-ID.
+- Jämförde frontendens nuvarande datastruktur med backendens `MixRequestDto` och `MixResponseDto`.
+- Granskade `eqTypes.ts` och undersökte hur frontendens EQ-värden kan mappas till backendens `MixEq`.
+- Granskade `BacktrackSelector.tsx` och konstanterna för backtracks för att förstå hur val av backtrack hanteras.
+- Granskade `Tracks/constants.ts` för att undersöka hur MixerLab identifierar och hämtar sina spår.
+- Granskade `frontend/src/api/index.ts` och `useApiClient.ts` för att förstå hur befintliga API-klienter skapas och används.
+- Undersökte exempel på hur andra komponenter använder `useApiClient()` och Mixer-klienten.
+- Identifierade att frontend redan har en etablerad lösning för autentiserad kommunikation med backend genom `useApiClient()`.
+- Diskuterade den önskade funktionaliteten för flera sparade mixes med egna namn, exempelvis "Min rockmix", "Jazzmix" och "Testmix".
+- Påbörjade planeringen för hur användaren ska kunna skapa, spara, lista, återställa, uppdatera och ta bort sina mixes.
+- Inga ändringar i frontend-koden genomfördes under dagen. Arbetet bestod av undersökning och planering.
 
 ## 2. Tekniker och verktyg
 
-- Java.
-- Spring Boot.
-- Spring Security.
-- JWT-autentisering.
-- Spring Data JPA.
-- Hibernate.
-- PostgreSQL.
-- Flyway.
-- JUnit 5.
-- Mockito.
-- AssertJ.
-- MockMvc.
-- Testcontainers.
-- React.
-- TypeScript.
-- Auth0.
-- IntelliJ IDEA.
-- Maven.
-- Git och GitHub.
-- GitHub Copilot Code Review.
-- `MixController`.
-- `MixService`.
-- `MixIT`.
-- `MixControllerTest`.
-- `MixServiceTest`.
-- `MixEq`.
-- `UserService`.
-- `UserServiceTest`.
-- `MixNotFoundException`.
-- `ApiExceptionHandler`.
-- `StringUtils.hasText()`.
-- `@Transactional`.
-- `IllegalArgumentException`.
-- `MixRequestDto`.
-- `MixResponseDto`.
-- `MixerLab.tsx`.
-- `mixer.client.ts`.
-- `mixer.types.ts`.
-- `createApiClient()`.
-- `createMixerClient()`.
-- `useApiClient()`.
+- Java och Spring Boot.
+- Spring Data JPA och Hibernate.
+- PostgreSQL och Testcontainers.
+- JUnit 5 och Mockito.
+- Maven Wrapper.
+- JWT och Spring Security.
+- `StringUtils.hasText()` för validering.
+- React och TypeScript.
+- `useEffect` och React state.
+- Auth0 och autentiserad API-kommunikation.
 - `localStorage`.
-
----
+- Git och GitHub.
+- Pull Requests och kodgranskning.
+- Copilot Code Review.
+- IntelliJ IDEA.
+- GitHub Actions.
 
 ## 3. Problem och lösningar
 
-### Cross-user authorization
-
-GitHub Copilot identifierade att det saknades integrationstester som bevisade att en användare inte kan uppdatera eller ta bort en annan användares mix.
-
-`MixService` använder `findByIdAndUserId`, vilket innebär att sökningen tar hänsyn till både mixens ID och användarens ID.
-
-**Genomfört:**
-
-- Lade till integrationstest för att förhindra att en annan användare uppdaterar en mix.
-- Lade till integrationstest för att förhindra att en annan användare tar bort en mix.
-- Verifierade att mixens information är oförändrad efter otillåtna försök.
-- Båda testerna godkändes mot PostgreSQL via Testcontainers.
-
-**Återstår:**
-
-HTTP- och JWT-auktorisering behöver fortfarande verifieras med tester som använder två olika JWT-principaler. De nya integrationstesterna verifierar service- och databaslogiken, inte hela HTTP-säkerhetskedjan.
-
-### JWT subject och användarskapande
-
-Copilot identifierade att `jwt.getSubject()` används direkt i `MixController`.
-
-**Genomfört:**
-
-- Granskade `MixController.java` och `UserService.java`.
-- Lade till validering i `getOrCreateUserBySubject()` med `StringUtils.hasText(subject)`.
-- Null, tomma strängar och blanksteg avvisas nu.
-- Ogiltiga subjects stoppas innan databassökningen.
-- Lade till tre nya tester i `UserServiceTest`.
-- Samtliga 16 tester i `UserServiceTest` godkändes.
-
-**Återstår:**
-
-Undersöka om JWT-subject även behöver särskild hantering på autentiseringsnivå och om ett särskilt autentiseringsundantag är lämpligare än `IllegalArgumentException`.
-
-### Säkerhet i MixController
-
-Copilot har uppmärksammat att endast `GET /mixes` uttryckligen använder `@PreAuthorize("isAuthenticated()")`.
-
-POST, PUT och DELETE förlitar sig på den globala säkerhetskonfigurationen.
-
-**Återstår:**
-
-Granska `SecurityConfig.java` och verifiera att samtliga endpoints skyddas korrekt. Därefter behöver HTTP-tester kompletteras för att kontrollera autentiserade och oautentiserade anrop.
-
-### EQ-validering
-
-`MixEq.java` innehåller åtta fält utan uttryckliga valideringsintervall.
-
-**Återstår:**
-
-Undersöka vilka värden MixerLabs frontend använder innan valideringsregler implementeras. Detta är viktigt för att undvika att backend avvisar giltiga värden från frontend.
-
-### Track-ordning
-
-Copilot uppmärksammade att ordningen på tracks inte uttryckligen bevaras i databasen.
-
-**Återstår:**
-
-Undersöka om track-ordningen är viktig för uppspelning och återställning av en mix. Om den är viktig behöver en lösning med exempelvis `@OrderColumn` utredas.
-
-### Transaktionshantering
-
-`MixService` saknar uttryckliga `@Transactional`-annoteringar.
-
-**Återstår:**
-
-Granska vilka service-metoder som behöver transaktionshantering, framför allt uppdatering, borttagning och hämtning av collections.
-
-### Övriga identifierade problem
-
-Copilot identifierade även följande områden som behöver undersökas:
-
-- Konsekvent JSON-format för valideringsfel.
-- Mer informativa felmeddelanden.
-- Eventuella begränsningar mot dubbla track IDs.
-- Migrationstest mot verklig migrationshistorik.
-- Överensstämmelse mellan Hibernate-entiteter och databasschema.
-- Mindre förbättringar i befintliga tester.
-- Kontroll av EQ efter ett otillåtet uppdateringsförsök.
-
-Dessa punkter är ännu inte åtgärdade eller verifierade.
-
-### Frontendintegration för MixerLab
-
-Vid undersökningen av frontendens nuvarande lagringslösning identifierades flera skillnader mellan frontendens `SavedMix` och Java-backendens DTO:er.
-
-**Identifierat:**
-
-- Frontend använder för närvarande `localStorage` för att spara en mix.
-- Java-backendens `MixRequestDto` kräver ett mixnamn.
-- Frontendens EQ-struktur skiljer sig från backendens `MixEq`.
-- `MixResponseDto` returnerar ett databas-ID som frontend behöver hantera.
-- Den befintliga API-klienten saknar ännu metoder för att skapa, hämta, uppdatera och ta bort mixes.
-
-**Planerat:**
-
-- Utöka `mixer.types.ts` med typer för mixarnas request- och response-data.
-- Utöka `mixer.client.ts` med API-metoder för mixhantering.
-- Använda den befintliga `useApiClient()`-hooken för autentiserade anrop.
-- Ersätta den nuvarande permanenta `localStorage`-lagringen med databaslagring.
-- Implementera stöd för flera sparade mixes med egna namn.
-
-Ingen kodändring för frontendintegrationen har ännu genomförts.
-
----
+- Vid integrationstesterna uppstod ett `LazyInitializationException` när testet försökte komma åt `trackIds` efter att Hibernate-sessionen hade stängts. Problemet löstes genom att lägga till `@Transactional` på berörda testmetoder.
+- Ett av integrationstesterna innehöll felaktig testdata. Detta rättades och testerna kördes igen.
+- Det var viktigt att verifiera att användare inte kan uppdatera eller ta bort andra användares mixes. Detta hanterades genom tester som kontrollerar användarägarskapet.
+- JWT-subject behövde valideras innan det används för att hitta eller skapa en användare. Detta löstes genom att kontrollera värdet med `StringUtils.hasText(subject)` och lägga till tillhörande tester.
+- Vid granskningen av backend återstod frågor kring säkerheten för HTTP-anrop och hur JWT-autentisering ska verifieras genom tester. De befintliga integrationstesterna testar tjänstelogik direkt och verifierar därför inte hela HTTP- och JWT-flödet.
+- Vid undersökningen av frontend-integrationen upptäcktes att MixerLab fortfarande använder `localStorage` för att spara en mix under nyckeln `mixerlab_mix`.
+- Frontendens nuvarande datastruktur skiljer sig från backendens DTO:er. Frontend saknar bland annat ett namn för mixen, medan backendens `MixRequestDto` kräver ett namn.
+- EQ-strukturen i frontend behöver mappas till backendens `MixEq`, eftersom frontend använder separata grupper för amplitud och frekvens.
+- Den befintliga API-klienten saknar metoder för att skapa, hämta, uppdatera och ta bort mixes. Lösningen blir att utöka den befintliga Mixer-klienten i stället för att skapa en separat kommunikationslösning.
+- Backtrack-ID:n behöver kontrolleras så att de motsvarar de ID:n som backend förväntar sig. Detta är ännu inte verifierat.
 
 ## 4. Ny kunskap
 
-- Fördjupat förståelsen för hur GitHub Copilot kan användas för att genomföra upprepade Code Reviews av en pull request.
-- Fått en tydligare bild av skillnaden mellan att testa service-logik med mockade beroenden och att verifiera säkerheten genom integrationstester.
-- Fördjupat förståelsen för varför användarens JWT-subject behöver valideras innan det används för att hämta eller skapa användardata.
-- Fått bättre förståelse för hur `findByIdAndUserId` kan användas för att begränsa åtkomst till användarägda resurser.
-- Uppmärksammat skillnaden mellan HTTP 403 och HTTP 404 och hur valet av statuskod kan påverka informationsläckage.
-- Fördjupat förståelsen för hur JPA hanterar `@ElementCollection` och varför ordningen i en lista behöver hanteras uttryckligen om den är viktig.
-- Fått mer kunskap om varför transaktionshantering är viktig vid databasoperationer.
-- Uppmärksammat vikten av att ha ett konsekvent API-format för valideringsfel.
-- Fått en bättre överblick över vilka delar av MixerLab-persistensen som fortfarande behöver kvalitetssäkras.
-- Förstått hur `LazyInitializationException` kan uppstå när en lazy-loaded collection hämtas efter att Hibernate-sessionen har stängts.
-- Lärt mig hur `@Transactional` på en integrationstestmetod kan hålla databassessionen öppen under testets körning.
-- Fördjupat förståelsen för hur `StringUtils.hasText()` kan användas för att kontrollera om en sträng innehåller text och inte bara blanksteg.
-- Fått bättre förståelse för skillnaden mellan `IllegalArgumentException` och `IllegalStateException` och när respektive undantag är lämpligt.
-- Fått mer erfarenhet av att komplettera integrationstester och verifiera att användarägarskap respekteras vid databasoperationer.
-- Fått bättre förståelse för hur frontendens API-klient är uppbyggd och hur `createApiClient()` samlar projektets olika API-klienter.
-- Lärt mig hur `useApiClient()` kopplar React-komponenter till autentiserade backend-anrop via Auth0.
-- Fått bättre förståelse för hur befintliga React-komponenter använder API-klienten för att hämta, skapa, uppdatera och ta bort data.
-- Identifierat hur frontendens nuvarande `localStorage`-struktur behöver anpassas till Java-backendens `MixRequestDto` och `MixResponseDto`.
-
----
+- Fördjupad förståelse för hur `@Transactional` kan användas i integrationstester när testet behöver komma åt lazy-loaded relationer.
+- Förståelse för varför Hibernate kan kasta `LazyInitializationException` när en relation hämtas efter att sessionen har stängts.
+- Lärt mig mer om hur tester kan verifiera att en användare endast får ändra eller ta bort sina egna databaspersistenta objekt.
+- Förståelse för varför JWT-subject behöver valideras innan det används för att identifiera en användare.
+- Fördjupad förståelse för hur `StringUtils.hasText()` kan användas för att kontrollera null, tomma strängar och strängar med enbart blanksteg.
+- Lärt mig mer om hur frontendens API-klienter är organiserade i projektet.
+- Förståelse för hur `createApiClient()` samlar projektets olika API-klienter.
+- Lärt mig hur `useApiClient()` används för att skapa autentiserad kommunikation med backend.
+- Förståelse för hur frontendens EQ-värden behöver mappas till backendens Java-modell.
+- Förståelse för skillnaden mellan att spara en enda mix lokalt i webbläsaren och att spara flera namngivna mixes i en databas.
+- Lärt mig att stabila track-ID:n kan användas för att återskapa en mix utan att behöva spara ljudfilernas URL:er i själva mixen.
 
 ## 5. Reflektion
 
-Dagens arbete har fortsatt med kvalitetssäkring av MixerLab-persistensen i Java-backenden.
+Dagen har varit produktiv och inneburit framsteg både inom backend och planeringen av frontend-integrationen.
 
-Den nya Code Review-granskningen från GitHub Copilot var användbar eftersom den bekräftade att flera av de tidigare problemen har åtgärdats.
+Under förmiddagen fortsatte jag att stärka backend-implementationen genom att lägga till tester för användarägarskap och validering av JWT-subject. Det var viktigt att säkerställa att användare inte kan komma åt eller ändra andra användares mixes.
 
-Under dagen kunde jag komplettera integrationstesterna i `MixIT.java` och verifiera att en användare inte kan uppdatera eller ta bort en annan användares mix.
+Jag fick även arbeta vidare med integrationstester och förstå hur Hibernate hanterar relationer och lazy loading. Problemen med `LazyInitializationException` gav mig en bättre förståelse för när transaktioner behövs i tester.
 
-Jag stötte även på ett problem med `LazyInitializationException`, vilket gav mig en bättre förståelse för hur Hibernate hanterar lazy-loaded collections och hur `@Transactional` kan användas i integrationstester.
+Under eftermiddagen började jag undersöka hur frontendens MixerLab ska kopplas till den befintliga Java-backenden. Jag gick igenom relevanta komponenter, API-klienter och datatyper för att förstå hur den nuvarande lösningen fungerar.
 
-Därefter arbetade jag med JWT-subject-valideringen i `UserService`. Genom att lägga till kontrollen med `StringUtils.hasText()` säkerställs att ogiltiga subjects inte når databasanropen. De tre nya testerna och samtliga befintliga tester i `UserServiceTest` passerade.
+En viktig upptäckt var att frontend redan har en etablerad struktur för autentiserad API-kommunikation. Det innebär att jag kan bygga vidare på den befintliga Mixer-klienten i stället för att skapa en ny lösning.
 
-Jag har även committat och pushat båda delarna av arbetet till feature-branchen. Det känns bra att kunna avsluta respektive förbättring med verifierade tester och en separat commit.
+Jag har också identifierat skillnader mellan frontendens nuvarande sparade mix och backendens DTO:er. Dessa behöver hanteras innan integrationen kan genomföras.
 
-Den senaste Code Review-granskningen visar att det fortfarande finns viktiga områden att arbeta med, särskilt säkerheten kring HTTP-anrop och JWT-auktorisering.
+Jag har inte börjat ändra frontend-koden ännu. Dagens arbete har framför allt handlat om att förstå den befintliga strukturen och planera hur flera namngivna mixes ska kunna sparas och hämtas från databasen.
 
-Under eftermiddagen började jag undersöka frontendens befintliga struktur inför integrationen med Java-backenden. Jag gick igenom hur API-klienten skapas, hur autentisering hanteras och hur andra React-komponenter använder `useApiClient()`.
-
-Jag kunde också identifiera skillnader mellan frontendens nuvarande `SavedMix` och backendens DTO:er. En viktig del blir att anpassa frontendens EQ-inställningar och lägga till stöd för mixnamn och databasens ID.
-
-Vi kom fram till att användaren ska kunna spara flera olika mixes med egna namn. Det innebär att MixerLab behöver kunna skapa, hämta, uppdatera och ta bort sparade mixes.
-
-Jag har ännu inte ändrat någon frontendkod. Det känns viktigt att först förstå projektets befintliga struktur och följa de mönster som redan används i andra komponenter, så att integrationen blir konsekvent med resten av projektet.
-
-### Plan för fredagen den 27 november
-
-På fredagen kommer jag att vara i skolan för min muntliga LIA-redovisning. Där ska jag berätta hur arbetet har gått under LIA-perioden och presentera vad jag har arbetat med.
-
-Efter redovisningen, när jag fortsätter med utvecklingsarbetet, är nästa planerade steg att börja strukturera frontendintegrationen för MixerLab.
-
-Fokus blir att:
-
-- Lägga till TypeScript-typer som motsvarar `MixRequestDto` och `MixResponseDto`.
-- Utöka den befintliga mixer-klienten med metoder för att hämta, skapa, uppdatera och ta bort mixes.
-- Planera hur användaren ska kunna namnge och hantera flera sparade mixes.
-- Anpassa frontendens EQ-struktur till Java-backendens `MixEq`.
-
-Arbetet ska genomföras stegvis och med hänsyn till den befintliga frontendstrukturen.
-
----
+Nästa arbetsdag ska jag hålla min muntliga LIA-redovisning på skolan. Därefter är planen att fortsätta frontend-integrationen genom att börja utöka TypeScript-typerna och Mixer API-klienten.
 
 ## Arbetstid
 
-- **09:30–09:35:** Daily sprint/scrum via videomöte med Clara Westberg och Ellinor Höijer. Johan Hellberg deltog inte i mötet, vilket gjorde att mötet blev kort. Informerade om att jag på fredagen den 27 november ska vara i skolan för en muntlig redovisning av min LIA.
-- **09:35–12:00:** Fortsatte med arbetet från föregående arbetsdag. Arbetet omfattade kvalitetssäkring av MixerLab-persistensen och genomgång av GitHub Copilots Code Review.
-- **12:00–14:00:** Lunch.
-- **14:00–17:00:** Undersökte frontendens befintliga API-struktur och hur MixerLab ska integreras med Java-backendens databaslösning. Granskade API-klienten, `useApiClient()`, relevanta React-komponenter samt backendens request- och response-DTO:er. Planerade hur användaren ska kunna spara flera mixes med egna namn.
+- 09:30–09:35 – Dagligt videomöte med Clara Westberg och Ellinor Höijer.
+- 09:35–12:00 – Backendtester, användarägarskap och JWT-subject-validering.
+- 12:00–14:00 – Lunch.
+- 14:00–17:00 – Granskning av Copilots kodgranskning och undersökning av frontend-integrationen för MixerLab.
 
----
+**Sluttid:** 17:00
 
 ## Sammanfattning av dagen
 
-Arbetsdagen inleddes med ett kort daily sprint/scrum-möte via video med Clara Westberg och Ellinor Höijer. Johan Hellberg deltog inte vid mötet. Under mötet informerade jag om att jag på fredagen den 27 november kommer att vara i skolan för en muntlig redovisning av min LIA.
+Under dagen fortsatte arbetet med MixerLab-databaspersistens. Jag lade till integrationstester för att kontrollera att användare endast kan uppdatera och ta bort sina egna mixes. Jag löste även ett problem med `LazyInitializationException` genom att använda `@Transactional` i berörda tester.
 
-Efter mötet fortsatte jag med arbetet från föregående arbetsdag och gick vidare med den senaste Code Review-granskningen från GitHub Copilot.
+Jag lade till validering av JWT-subject i `UserService` och kompletterade med tre tester. `UserServiceTest` genomfördes med 16 godkända tester.
 
-Under dagen kompletterade jag integrationstesterna i `MixIT.java` med tester som verifierar att en användare inte kan uppdatera eller ta bort en annan användares mix. Båda testerna godkändes. Det befintliga borttagningstestet kontrollerades också och fungerade som det skulle.
+Ändringarna för integrationstesterna och JWT-subject-valideringen committades och pushades framgångsrikt till GitHub.
 
-Ett problem med `LazyInitializationException` uppstod när testet försökte läsa `trackIds`. Problemet löstes genom att lägga till `@Transactional` på testmetoden.
+Under eftermiddagen granskade jag Copilots kodgranskning och började undersöka frontend-integrationen. Jag gick igenom MixerLab-komponenten, API-klienten, TypeScript-typerna och hur autentiserade API-anrop hanteras i projektet.
 
-Ändringarna i `MixIT.java` committades och pushades till GitHub med commit `e7431caaf`.
+Undersökningen visade att frontend behöver utökas för att stödja flera namngivna mixes som sparas i Java-backenden i stället för att en enda mix sparas permanent i `localStorage`.
 
-Därefter arbetade jag med JWT-subject-validering i `UserService`. Jag lade till en kontroll som avvisar null, tomma och blankstegsbaserade subjects innan databasanrop görs. Tre nya tester lades till för att verifiera valideringen. Samtliga 16 tester i `UserServiceTest` godkändes utan failures eller errors.
+Frontend-koden har ännu inte ändrats. Nästa steg är att börja implementera stödet för mixes i TypeScript-typerna och Mixer API-klienten.
 
-Ändringarna i `UserService.java` och `UserServiceTest.java` committades och pushades till GitHub med commit `8f5489a67`.
-
-Jag genomförde även en ny Code Review med GitHub Copilot efter den senaste committen. Copilot bedömde ändringen som en fokuserad förbättring utan nya uppenbara blockerande problem. De viktigaste återstående områdena handlar fortfarande om HTTP/JWT-säkerhet, EQ-validering och bevarande av track-ordning.
-
-Under eftermiddagen började jag undersöka frontendens struktur inför integrationen av MixerLab med Java-backenden. Jag granskade hur API-klienten skapas och används, hur Auth0-token hanteras och hur befintliga React-komponenter kommunicerar med backend.
-
-Jag jämförde även frontendens nuvarande lagringsstruktur med Java-backendens `MixRequestDto` och `MixResponseDto`. Undersökningen visade att frontend behöver anpassas för att kunna skicka mixnamn, hantera databasens mix-ID och översätta EQ-inställningarna till backendens struktur.
-
-Vi bestämde att användaren ska kunna spara flera olika mixes med egna namn och senare kunna hämta, uppdatera och ta bort dem.
-
-Ingen frontendkod ändrades under eftermiddagen. Arbetet bestod av undersökning och planering inför implementationen.
-
-Nästa arbetsdag börjar med den muntliga LIA-redovisningen i skolan. Därefter är planen att fortsätta med frontendintegrationen genom att lägga till nödvändiga TypeScript-typer och API-metoder för mixhanteringen.
+Fredagen den 27 november ska jag först hålla min muntliga LIA-redovisning på skolan och därefter fortsätta arbetet med frontend-integrationen.
 
 --

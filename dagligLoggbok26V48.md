@@ -623,8 +623,8 @@ Dagens arbete har framför allt gett mig mer erfarenhet av testning, felsökning
 
 ### Fortsatt arbete med MixerLab
 
-- Efter mötet fortsatte jag med arbetet från föregående arbetsdag.
-- Arbetet handlar om att förbättra och kvalitetssäkra Java-backendens hantering av MixerLab-mixes.
+- Fortsatte med arbetet från föregående arbetsdag.
+- Arbetet omfattade fortsatt kvalitetssäkring av Java-backendens hantering av MixerLab-mixes.
 - Fortsatte att använda GitHub Copilots tidigare kodgranskningar som underlag för att identifiera återstående problem och förbättringar.
 
 ### Fortsatt arbete med integrationstester i MixIT
@@ -743,6 +743,101 @@ Copilot kunde se att sju CI-kontroller var slutförda, men kunde inte bekräfta 
 
 Copilots bedömning var att PR #265 fortfarande inte är redo att mergas innan säkerhetskonfigurationen och HTTP-auktoriseringen har verifierats och övriga merge-krav är uppfyllda.
 
+### Undersökning av frontendintegrationen för MixerLab
+
+Under eftermiddagen började jag undersöka hur den befintliga React-frontendens API-struktur fungerar för att kunna koppla MixerLab till Java-backendens databaslösning.
+
+Målet var att förstå hur frontend kommunicerar med backend innan några kodändringar genomförs.
+
+Följande filer och delar av projektet granskades:
+
+- `frontend/src/api/mixer/mixer.client.ts`
+- `frontend/src/api/mixer/mixer.types.ts`
+- `frontend/src/api/mixer/index.ts`
+- `frontend/src/api/index.ts`
+- `frontend/src/hooks/useApiClient.ts`
+- `MixerLab.tsx`
+- `eqTypes.ts`
+- `BacktrackSelector.tsx`
+- `Backtracks/constants.ts`
+- `Tracks/constants.ts`
+
+Jag undersökte även andra React-komponenter som redan använder `useApiClient()`, bland annat:
+
+- `TracksSelector.tsx`
+- `BacktracksPage.tsx`
+- `AudioRecorder.tsx`
+- `StudioBass.tsx`
+- `MyRecordings.tsx`
+- `MyProfile.tsx`
+
+Syftet var att hitta ett befintligt arbetssätt för autentiserade API-anrop som kan återanvändas i MixerLab.
+
+### Genomgång av API-klientens struktur
+
+Jag hittade att projektet redan har en gemensam funktion, `createApiClient()`, som skapar och samlar projektets olika API-klienter.
+
+Mixer-klienten skapas genom `createMixerClient(getAccessToken)` och är redan kopplad till den gemensamma API-strukturen.
+
+Jag granskade även `useApiClient.ts` och konstaterade att hooken kopplar API-klienten till den aktuella Auth0-sessionen och tillhandahåller en access token för autentiserade backend-anrop.
+
+Därmed behöver vi inte skapa ett nytt system för API-kommunikation. Vi kan i stället utöka den befintliga mixer-klienten med funktioner för att hantera mixes.
+
+### Undersökning av befintlig MixerLab-lagring
+
+I `MixerLab.tsx` identifierades den nuvarande lösningen där mixinställningar sparas i webbläsarens `localStorage` med nyckeln `mixerlab_mix`.
+
+Den nuvarande lösningen sparar bland annat:
+
+- EQ-inställningar.
+- Vald backtrack.
+- Valda track-ID:n.
+
+Jag konstaterade att frontendens nuvarande `SavedMix`-struktur skiljer sig från Java-backendens DTO-struktur.
+
+Frontend saknar bland annat ett namn för mixen, medan Java-backendens `MixRequestDto` kräver ett namn.
+
+### Genomgång av Java-backendens DTO:er
+
+Jag gick igenom `MixRequestDto.java` och `MixResponseDto.java` för att jämföra frontendens nuvarande datamodell med backendens API-kontrakt.
+
+`MixRequestDto` innehåller:
+
+- `name`
+- `backtrackId`
+- `eq`
+- `trackIds`
+
+Namnet är obligatoriskt genom `@NotBlank` och listan med track-ID:n är obligatorisk genom `@NotNull`.
+
+`MixResponseDto` innehåller samma information samt ett `id` som identifierar den sparade mixen i databasen.
+
+Jag identifierade även att frontendens EQ-struktur behöver översättas till backendens `MixEq`-struktur innan data skickas till Java-backend.
+
+### Genomgång av track- och backtrack-ID:n
+
+Jag granskade `Tracks/constants.ts` och `Backtracks/constants.ts`.
+
+MixerLab använder stabila strängbaserade ID:n för sina tracks. Det innebär att frontend kan skicka dessa ID:n till Java-backendens `List<String> trackIds`.
+
+Jag konstaterade även att backtrack-ID:n behöver hanteras separat och att vi behöver säkerställa att de ID:n som frontend använder överensstämmer med vad backend förväntar sig.
+
+### Beslut om hur användaren ska hantera sparade mixes
+
+Vi diskuterade hur den färdiga funktionen ska fungera för användaren.
+
+Beslutet blev att användaren ska kunna spara flera olika mixes med egna namn, exempelvis:
+
+- Min rockmix
+- Jazzmix
+- Testmix
+
+Det innebär att MixerLab behöver stöd för att skapa, hämta, uppdatera och ta bort flera sparade mixes per användare.
+
+Vi kom också fram till att den befintliga `localStorage`-lösningen ska ersättas med databaslagring via Java-backend, så att sparade mixes finns kvar efter att sidan uppdateras eller webbläsaren stängs.
+
+Ingen frontendkod ändrades under denna undersökning. Arbetet avslutades med att identifiera hur integrationen bör byggas vidare med projektets befintliga API-struktur.
+
 ---
 
 ## 2. Tekniker och verktyg
@@ -760,6 +855,9 @@ Copilots bedömning var att PR #265 fortfarande inte är redo att mergas innan s
 - AssertJ.
 - MockMvc.
 - Testcontainers.
+- React.
+- TypeScript.
+- Auth0.
 - IntelliJ IDEA.
 - Maven.
 - Git och GitHub.
@@ -777,6 +875,15 @@ Copilots bedömning var att PR #265 fortfarande inte är redo att mergas innan s
 - `StringUtils.hasText()`.
 - `@Transactional`.
 - `IllegalArgumentException`.
+- `MixRequestDto`.
+- `MixResponseDto`.
+- `MixerLab.tsx`.
+- `mixer.client.ts`.
+- `mixer.types.ts`.
+- `createApiClient()`.
+- `createMixerClient()`.
+- `useApiClient()`.
+- `localStorage`.
 
 ---
 
@@ -864,6 +971,28 @@ Copilot identifierade även följande områden som behöver undersökas:
 
 Dessa punkter är ännu inte åtgärdade eller verifierade.
 
+### Frontendintegration för MixerLab
+
+Vid undersökningen av frontendens nuvarande lagringslösning identifierades flera skillnader mellan frontendens `SavedMix` och Java-backendens DTO:er.
+
+**Identifierat:**
+
+- Frontend använder för närvarande `localStorage` för att spara en mix.
+- Java-backendens `MixRequestDto` kräver ett mixnamn.
+- Frontendens EQ-struktur skiljer sig från backendens `MixEq`.
+- `MixResponseDto` returnerar ett databas-ID som frontend behöver hantera.
+- Den befintliga API-klienten saknar ännu metoder för att skapa, hämta, uppdatera och ta bort mixes.
+
+**Planerat:**
+
+- Utöka `mixer.types.ts` med typer för mixarnas request- och response-data.
+- Utöka `mixer.client.ts` med API-metoder för mixhantering.
+- Använda den befintliga `useApiClient()`-hooken för autentiserade anrop.
+- Ersätta den nuvarande permanenta `localStorage`-lagringen med databaslagring.
+- Implementera stöd för flera sparade mixes med egna namn.
+
+Ingen kodändring för frontendintegrationen har ännu genomförts.
+
 ---
 
 ## 4. Ny kunskap
@@ -882,6 +1011,10 @@ Dessa punkter är ännu inte åtgärdade eller verifierade.
 - Fördjupat förståelsen för hur `StringUtils.hasText()` kan användas för att kontrollera om en sträng innehåller text och inte bara blanksteg.
 - Fått bättre förståelse för skillnaden mellan `IllegalArgumentException` och `IllegalStateException` och när respektive undantag är lämpligt.
 - Fått mer erfarenhet av att komplettera integrationstester och verifiera att användarägarskap respekteras vid databasoperationer.
+- Fått bättre förståelse för hur frontendens API-klient är uppbyggd och hur `createApiClient()` samlar projektets olika API-klienter.
+- Lärt mig hur `useApiClient()` kopplar React-komponenter till autentiserade backend-anrop via Auth0.
+- Fått bättre förståelse för hur befintliga React-komponenter använder API-klienten för att hämta, skapa, uppdatera och ta bort data.
+- Identifierat hur frontendens nuvarande `localStorage`-struktur behöver anpassas till Java-backendens `MixRequestDto` och `MixResponseDto`.
 
 ---
 
@@ -901,9 +1034,28 @@ Jag har även committat och pushat båda delarna av arbetet till feature-branche
 
 Den senaste Code Review-granskningen visar att det fortfarande finns viktiga områden att arbeta med, särskilt säkerheten kring HTTP-anrop och JWT-auktorisering.
 
-Nästa steg blir därför att granska `SecurityConfig.java` och undersöka hur säkerheten är uppbyggd för samtliga endpoints i `MixController`.
+Under eftermiddagen började jag undersöka frontendens befintliga struktur inför integrationen med Java-backenden. Jag gick igenom hur API-klienten skapas, hur autentisering hanteras och hur andra React-komponenter använder `useApiClient()`.
 
-Jag behöver också fortsätta undersöka hur MixerLabs frontend hanterar EQ-värden och track-ordning så att backendens validering och databasmodell överensstämmer med frontendens funktionalitet.
+Jag kunde också identifiera skillnader mellan frontendens nuvarande `SavedMix` och backendens DTO:er. En viktig del blir att anpassa frontendens EQ-inställningar och lägga till stöd för mixnamn och databasens ID.
+
+Vi kom fram till att användaren ska kunna spara flera olika mixes med egna namn. Det innebär att MixerLab behöver kunna skapa, hämta, uppdatera och ta bort sparade mixes.
+
+Jag har ännu inte ändrat någon frontendkod. Det känns viktigt att först förstå projektets befintliga struktur och följa de mönster som redan används i andra komponenter, så att integrationen blir konsekvent med resten av projektet.
+
+### Plan för fredagen den 27 november
+
+På fredagen kommer jag att vara i skolan för min muntliga LIA-redovisning. Där ska jag berätta hur arbetet har gått under LIA-perioden och presentera vad jag har arbetat med.
+
+Efter redovisningen, när jag fortsätter med utvecklingsarbetet, är nästa planerade steg att börja strukturera frontendintegrationen för MixerLab.
+
+Fokus blir att:
+
+- Lägga till TypeScript-typer som motsvarar `MixRequestDto` och `MixResponseDto`.
+- Utöka den befintliga mixer-klienten med metoder för att hämta, skapa, uppdatera och ta bort mixes.
+- Planera hur användaren ska kunna namnge och hantera flera sparade mixes.
+- Anpassa frontendens EQ-struktur till Java-backendens `MixEq`.
+
+Arbetet ska genomföras stegvis och med hänsyn till den befintliga frontendstrukturen.
 
 ---
 
@@ -912,8 +1064,7 @@ Jag behöver också fortsätta undersöka hur MixerLabs frontend hanterar EQ-vä
 - **09:30–09:35:** Daily sprint/scrum via videomöte med Clara Westberg och Ellinor Höijer. Johan Hellberg deltog inte i mötet, vilket gjorde att mötet blev kort. Informerade om att jag på fredagen den 27 november ska vara i skolan för en muntlig redovisning av min LIA.
 - **09:35–12:00:** Fortsatte med arbetet från föregående arbetsdag. Arbetet omfattade kvalitetssäkring av MixerLab-persistensen och genomgång av GitHub Copilots Code Review.
 - **12:00–14:00:** Lunch.
-
-*Ytterligare arbetstid efter lunch är inte tidsatt i anteckningarna.*
+- **14:00–17:00:** Undersökte frontendens befintliga API-struktur och hur MixerLab ska integreras med Java-backendens databaslösning. Granskade API-klienten, `useApiClient()`, relevanta React-komponenter samt backendens request- och response-DTO:er. Planerade hur användaren ska kunna spara flera mixes med egna namn.
 
 ---
 
@@ -935,6 +1086,14 @@ Därefter arbetade jag med JWT-subject-validering i `UserService`. Jag lade till
 
 Jag genomförde även en ny Code Review med GitHub Copilot efter den senaste committen. Copilot bedömde ändringen som en fokuserad förbättring utan nya uppenbara blockerande problem. De viktigaste återstående områdena handlar fortfarande om HTTP/JWT-säkerhet, EQ-validering och bevarande av track-ordning.
 
-Nästa planerade steg är att granska `SecurityConfig.java` och verifiera hur autentiseringen fungerar för samtliga endpoints i `MixController`.
+Under eftermiddagen började jag undersöka frontendens struktur inför integrationen av MixerLab med Java-backenden. Jag granskade hur API-klienten skapas och används, hur Auth0-token hanteras och hur befintliga React-komponenter kommunicerar med backend.
+
+Jag jämförde även frontendens nuvarande lagringsstruktur med Java-backendens `MixRequestDto` och `MixResponseDto`. Undersökningen visade att frontend behöver anpassas för att kunna skicka mixnamn, hantera databasens mix-ID och översätta EQ-inställningarna till backendens struktur.
+
+Vi bestämde att användaren ska kunna spara flera olika mixes med egna namn och senare kunna hämta, uppdatera och ta bort dem.
+
+Ingen frontendkod ändrades under eftermiddagen. Arbetet bestod av undersökning och planering inför implementationen.
+
+Nästa arbetsdag börjar med den muntliga LIA-redovisningen i skolan. Därefter är planen att fortsätta med frontendintegrationen genom att lägga till nödvändiga TypeScript-typer och API-metoder för mixhanteringen.
 
 --

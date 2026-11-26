@@ -625,54 +625,125 @@ Dagens arbete har framför allt gett mig mer erfarenhet av testning, felsökning
 
 - Efter mötet fortsatte jag med arbetet från föregående arbetsdag.
 - Arbetet handlar om att förbättra och kvalitetssäkra Java-backendens hantering av MixerLab-mixes.
-- Fortsatte att använda GitHub Copilots tidigare kodgranskning som underlag för att identifiera återstående problem och förbättringar.
+- Fortsatte att använda GitHub Copilots tidigare kodgranskningar som underlag för att identifiera återstående problem och förbättringar.
+
+### Fortsatt arbete med integrationstester i MixIT
+
+Arbetet fortsatte med att komplettera integrationstesterna i `MixIT.java` för att verifiera att användare inte kan ändra andra användares mixes.
+
+Följande tester lades till:
+
+1. `updateMix_shouldThrowExceptionWhenMixBelongsToAnotherUser()`
+   - Testar att användare B inte kan uppdatera en mix som tillhör användare A.
+   - Kontrollerar att `MixNotFoundException` kastas.
+   - Kontrollerar att mixens ursprungliga information fortfarande är oförändrad.
+
+2. `deleteMix_shouldThrowExceptionWhenMixBelongsToAnotherUser()`
+   - Testar att användare B inte kan ta bort en mix som tillhör användare A.
+   - Kontrollerar att `MixNotFoundException` kastas.
+   - Kontrollerar att mixen fortfarande finns kvar i databasen och att informationen är oförändrad.
+
+Under arbetet uppstod ett `LazyInitializationException` när testet för uppdatering försökte läsa `trackIds` efter att Hibernate-sessionen hade stängts.
+
+Problemet löstes genom att lägga till `@Transactional` på testmetoden. Därefter kunde samlingen läsas under testets körning.
+
+Båda de nya integrationstesterna kördes och godkändes:
+
+- Uppdatering av en annan användares mix: 1 test, 0 failures och 0 errors.
+- Borttagning av en annan användares mix: 1 test, 0 failures och 0 errors.
+
+Det befintliga testet `deleteMix_shouldRemoveMixFromDatabase()` kontrollerades också och fungerade som det skulle.
+
+Ett tidigare stavfel i testsubjectet `mix-delete-test-uset` rättades till `mix-delete-test-user`.
+
+### Commit och push av MixIT
+
+Efter att testerna hade verifierats committades ändringarna.
+
+- Commit: `e7431caaf`
+- Commit-meddelande: `test: add mix ownership integration tests`
+- Ändrad fil: `MixIT.java`
+- Ändringar: 66 insertions och 2 deletions.
+- Committen pushades framgångsrikt till `feature/mixerlab-database-persistence-java`.
+
+### Validering av JWT-subject i UserService
+
+Efter arbetet med integrationstesterna fortsatte jag med Copilots synpunkt om att JWT-subject inte validerades innan det användes för att hämta eller skapa användare.
+
+Granskade `MixController.java` och `UserService.java`.
+
+I `MixController` hämtas subject direkt från JWT med `jwt.getSubject()` och skickas vidare till `MixService`.
+
+I `UserService` identifierades att metoden `getOrCreateUserBySubject()` saknade en kontroll av subject innan databassökningen genomfördes.
+
+En validering lades därför till med `StringUtils.hasText(subject)`.
+
+Om subject är null, tomt eller endast innehåller blanksteg kastas nu `IllegalArgumentException` innan något databasanrop görs.
+
+### Utökning av UserServiceTest
+
+För att verifiera den nya valideringen lades tre nya enhetstester till i `UserServiceTest.java`:
+
+1. `getOrCreateUserBySubject_shouldThrowExceptionWhenSubjectIsNull()`
+2. `getOrCreateUserBySubject_shouldThrowExceptionWhenSubjectIsEmpty()`
+3. `getOrCreateUserBySubject_shouldThrowExceptionWhenSubjectContainsOnlyWhitespace()`
+
+Testerna kontrollerar både att rätt undantag kastas och att `UserRepo` inte kontaktas när subject är ogiltigt.
+
+Vid den första testkörningen förväntade sig testerna `IllegalStateException`, medan produktionskoden korrekt kastade `IllegalArgumentException`.
+
+Detta rättades genom att uppdatera förväntningarna i de tre testerna. Produktionskoden behövde inte ändras.
+
+Därefter kördes hela `UserServiceTest` med följande resultat:
+
+- 16 tester körda.
+- 0 failures.
+- 0 errors.
+- 0 skipped.
+- BUILD SUCCESS.
+
+### Commit och push av JWT-validering
+
+Efter att samtliga tester hade godkänts committades ändringarna.
+
+- Commit: `8f5489a67`
+- Commit-meddelande: `fix: validate JWT subject before user lookup`
+- Ändrade filer:
+  - `UserService.java`
+  - `UserServiceTest.java`
+- Ändringar: 32 insertions.
+- Committen pushades framgångsrikt till `feature/mixerlab-database-persistence-java`.
 
 ### Ny Code Review från GitHub Copilot
 
-Efter den senaste committen `eef2d98e4` genomfördes ytterligare en Code Review med GitHub Copilot.
+Efter commit `8f5489a67` bad jag GitHub Copilot att genomföra ytterligare en Code Review av PR #265.
 
-Granskningen innehöll 13 punkter med problem och förbättringsförslag. Copilot bekräftade även att flera av de tidigare identifierade problemen har åtgärdats.
+Copilot bedömde den senaste committen som en fokuserad förbättring med låg risk.
 
-Följande punkter identifierades:
+Följande bekräftades:
 
-1. **Cross-user authorization:** Integrationstesterna behöver bevisa att användare B inte kan uppdatera eller ta bort användare A:s mix.
-2. **JWT subject:** `jwt.getSubject()` används direkt. Subject behöver valideras så att null eller tomma värden inte kan användas för att skapa eller hämta användare.
-3. **Säkerhet i MixController:** Alla fyra endpoints behöver ha konsekvent autentiseringsskydd, antingen genom uttryckliga säkerhetsregler eller genom verifiering av den globala säkerhetskonfigurationen.
-4. **404 och 403:** Saknade mixes och mixes som tillhör andra användare behandlas på samma sätt. Detta kan vara ett medvetet säkerhetsval för att inte avslöja andra användares resurser.
-5. **EQ-validering:** De åtta EQ-fälten saknar begränsningar för tillåtna värden.
-6. **Track-ordning:** `@ElementCollection` garanterar inte att ordningen på tracks bevaras. `@OrderColumn` kan behövas.
-7. **Transaktionshantering:** `MixService` saknar uttryckliga transaktionsgränser.
-8. **Valideringsfel:** Standardfel från `@Valid` kan ha ett annat JSON-format än projektets egen `ErrorResponse`.
-9. **Felmeddelanden:** `MixNotFoundException` använder meddelandet `"Mix not found"` i stället för ett mer informativt meddelande som innehåller mixens ID.
-10. **Dubbla track IDs:** Databastabellen har ingen unik begränsning för kombinationen `(mix_id, track_id)`.
-11. **Migrationstest:** Testet verifierar en färsk databasschemautgång men inte en uppgradering genom hela den verkliga migrationshistoriken.
-12. **Schema validation:** `spring.jpa.hibernate.ddl-auto=validate` innebär att applikationen inte startar om entiteterna och databasschemat inte överensstämmer.
-13. **Testkvalitet:** Copilot identifierade mindre förbättringar, bland annat ett stavfel i ett testsubject (`mix-delete-test-uset`) och användning av null-DTO:er i vissa service-tester.
+- `UserService` avvisar null, tomma och blankstegsbaserade subjects.
+- Ogiltiga subjects stoppas innan databasanrop.
+- Tester täcker samtliga tre situationer.
+- Inga nya uppenbara blockerande problem identifierades.
 
-### Förbättringar som Copilot bekräftade
+Copilot uppmärksammade även att `IllegalArgumentException` redan hanteras av `ApiExceptionHandler` och returnerar HTTP 400.
 
-Copilot bekräftade att följande förbättringar redan är genomförda:
+En möjlig förbättring är att använda ett särskilt autentiseringsundantag om ogiltiga JWT-subjects ska behandlas som autentiseringsproblem i stället för vanliga klientfel.
 
-- Saknade mixes hanteras med `MixNotFoundException`.
-- Update och delete returnerar HTTP 404 i stället för generella RuntimeException-fel.
-- Tomma mixnamn avvisas genom validering.
-- `MixNotFoundException` hanteras av den globala `ApiExceptionHandler`.
-- `UserService` har fått bredare enhetstestning för användarhantering, medlemskap, Free Trial och uppdatering av roller.
+Copilot påpekade också att följande områden fortfarande behöver undersökas:
 
-### Planering av fortsatt arbete
+- Konsekvent autentiseringsskydd för alla endpoints i `MixController`.
+- HTTP-tester som verifierar att oautentiserade anrop till create, update och delete avvisas.
+- Testning av cross-user authorization genom HTTP och JWT.
+- Validering av EQ-värden.
+- Bevarande av track-ordning i databasen.
 
-Efter granskningen identifierades säkerhet och JWT-hantering som de viktigaste återstående områdena.
+Copilot kunde se att sju CI-kontroller var slutförda, men kunde inte bekräfta om samtliga hade godkänts.
 
-Nästa steg är att granska `MixIT.java` för att undersöka vilka integrationstester som redan finns och vad som behöver kompletteras.
+Copilots bedömning var att PR #265 fortfarande inte är redo att mergas innan säkerhetskonfigurationen och HTTP-auktoriseringen har verifierats och övriga merge-krav är uppfyllda.
 
-Målet är att verifiera följande:
-
-- Användare A skapar en mix.
-- Användare B försöker hämta användare A:s mix.
-- Användare B försöker uppdatera användare A:s mix.
-- Användare B försöker ta bort användare A:s mix.
-
-Ingen ny implementation av dessa tester är ännu verifierad.
+---
 
 ## 2. Tekniker och verktyg
 
@@ -700,28 +771,60 @@ Ingen ny implementation av dessa tester är ännu verifierad.
 - `MixServiceTest`.
 - `MixEq`.
 - `UserService`.
+- `UserServiceTest`.
 - `MixNotFoundException`.
 - `ApiExceptionHandler`.
+- `StringUtils.hasText()`.
+- `@Transactional`.
+- `IllegalArgumentException`.
+
+---
 
 ## 3. Problem och lösningar
 
 ### Cross-user authorization
 
-GitHub Copilot identifierade att det fortfarande saknas tillräckliga integrationstester som bevisar att en användare inte kan uppdatera eller ta bort en annan användares mix.
+GitHub Copilot identifierade att det saknades integrationstester som bevisade att en användare inte kan uppdatera eller ta bort en annan användares mix.
 
-`MixService` använder `findByIdAndUserId`, vilket är bra eftersom sökningen tar hänsyn till både mixens ID och användarens ID.
+`MixService` använder `findByIdAndUserId`, vilket innebär att sökningen tar hänsyn till både mixens ID och användarens ID.
+
+**Genomfört:**
+
+- Lade till integrationstest för att förhindra att en annan användare uppdaterar en mix.
+- Lade till integrationstest för att förhindra att en annan användare tar bort en mix.
+- Verifierade att mixens information är oförändrad efter otillåtna försök.
+- Båda testerna godkändes mot PostgreSQL via Testcontainers.
 
 **Återstår:**
 
-Granska `MixIT.java` och komplettera testerna för att verifiera att användare B inte kan ändra eller ta bort användare A:s mix.
+HTTP- och JWT-auktorisering behöver fortfarande verifieras med tester som använder två olika JWT-principaler. De nya integrationstesterna verifierar service- och databaslogiken, inte hela HTTP-säkerhetskedjan.
 
 ### JWT subject och användarskapande
 
 Copilot identifierade att `jwt.getSubject()` används direkt i `MixController`.
 
+**Genomfört:**
+
+- Granskade `MixController.java` och `UserService.java`.
+- Lade till validering i `getOrCreateUserBySubject()` med `StringUtils.hasText(subject)`.
+- Null, tomma strängar och blanksteg avvisas nu.
+- Ogiltiga subjects stoppas innan databassökningen.
+- Lade till tre nya tester i `UserServiceTest`.
+- Samtliga 16 tester i `UserServiceTest` godkändes.
+
 **Återstår:**
 
-Undersöka hur `UserService` hanterar null eller tomma subjects och säkerställa att ogiltiga värden avvisas innan användaruppslagning eller användarskapande.
+Undersöka om JWT-subject även behöver särskild hantering på autentiseringsnivå och om ett särskilt autentiseringsundantag är lämpligare än `IllegalArgumentException`.
+
+### Säkerhet i MixController
+
+Copilot har uppmärksammat att endast `GET /mixes` uttryckligen använder `@PreAuthorize("isAuthenticated()")`.
+
+POST, PUT och DELETE förlitar sig på den globala säkerhetskonfigurationen.
+
+**Återstår:**
+
+Granska `SecurityConfig.java` och verifiera att samtliga endpoints skyddas korrekt. Därefter behöver HTTP-tester kompletteras för att kontrollera autentiserade och oautentiserade anrop.
 
 ### EQ-validering
 
@@ -757,8 +860,11 @@ Copilot identifierade även följande områden som behöver undersökas:
 - Migrationstest mot verklig migrationshistorik.
 - Överensstämmelse mellan Hibernate-entiteter och databasschema.
 - Mindre förbättringar i befintliga tester.
+- Kontroll av EQ efter ett otillåtet uppdateringsförsök.
 
 Dessa punkter är ännu inte åtgärdade eller verifierade.
+
+---
 
 ## 4. Ny kunskap
 
@@ -771,25 +877,45 @@ Dessa punkter är ännu inte åtgärdade eller verifierade.
 - Fått mer kunskap om varför transaktionshantering är viktig vid databasoperationer.
 - Uppmärksammat vikten av att ha ett konsekvent API-format för valideringsfel.
 - Fått en bättre överblick över vilka delar av MixerLab-persistensen som fortfarande behöver kvalitetssäkras.
+- Förstått hur `LazyInitializationException` kan uppstå när en lazy-loaded collection hämtas efter att Hibernate-sessionen har stängts.
+- Lärt mig hur `@Transactional` på en integrationstestmetod kan hålla databassessionen öppen under testets körning.
+- Fördjupat förståelsen för hur `StringUtils.hasText()` kan användas för att kontrollera om en sträng innehåller text och inte bara blanksteg.
+- Fått bättre förståelse för skillnaden mellan `IllegalArgumentException` och `IllegalStateException` och när respektive undantag är lämpligt.
+- Fått mer erfarenhet av att komplettera integrationstester och verifiera att användarägarskap respekteras vid databasoperationer.
+
+---
 
 ## 5. Reflektion
 
 Dagens arbete har fortsatt med kvalitetssäkring av MixerLab-persistensen i Java-backenden.
 
-Den nya Code Review-granskningen från GitHub Copilot var användbar eftersom den bekräftade att flera av de tidigare problemen har åtgärdats. Framför allt har felhanteringen för saknade mixes förbättrats och testerna för validering av mixnamn har kompletterats.
+Den nya Code Review-granskningen från GitHub Copilot var användbar eftersom den bekräftade att flera av de tidigare problemen har åtgärdats.
 
-Samtidigt visar granskningen att det fortfarande finns viktiga områden att arbeta med, särskilt säkerheten kring användarnas mixes.
+Under dagen kunde jag komplettera integrationstesterna i `MixIT.java` och verifiera att en användare inte kan uppdatera eller ta bort en annan användares mix.
 
-Jag tycker att det är viktigt att inte bara kontrollera att metoderna fungerar när rätt användare gör ett anrop, utan även att verifiera att andra användare inte kan komma åt eller ändra information som de inte äger.
+Jag stötte även på ett problem med `LazyInitializationException`, vilket gav mig en bättre förståelse för hur Hibernate hanterar lazy-loaded collections och hur `@Transactional` kan användas i integrationstester.
 
-Nästa steg blir därför att granska de befintliga integrationstesterna i `MixIT.java` innan några ändringar görs.
+Därefter arbetade jag med JWT-subject-valideringen i `UserService`. Genom att lägga till kontrollen med `StringUtils.hasText()` säkerställs att ogiltiga subjects inte når databasanropen. De tre nya testerna och samtliga befintliga tester i `UserServiceTest` passerade.
+
+Jag har även committat och pushat båda delarna av arbetet till feature-branchen. Det känns bra att kunna avsluta respektive förbättring med verifierade tester och en separat commit.
+
+Den senaste Code Review-granskningen visar att det fortfarande finns viktiga områden att arbeta med, särskilt säkerheten kring HTTP-anrop och JWT-auktorisering.
+
+Nästa steg blir därför att granska `SecurityConfig.java` och undersöka hur säkerheten är uppbyggd för samtliga endpoints i `MixController`.
 
 Jag behöver också fortsätta undersöka hur MixerLabs frontend hanterar EQ-värden och track-ordning så att backendens validering och databasmodell överensstämmer med frontendens funktionalitet.
+
+---
 
 ## Arbetstid
 
 - **09:30–09:35:** Daily sprint/scrum via videomöte med Clara Westberg och Ellinor Höijer. Johan Hellberg deltog inte i mötet, vilket gjorde att mötet blev kort. Informerade om att jag på fredagen den 27 november ska vara i skolan för en muntlig redovisning av min LIA.
-- **09:35–pågående:** Fortsätter med arbetet från föregående arbetsdag. Arbetet omfattar fortsatt kvalitetssäkring av MixerLab-persistensen och genomgång av GitHub Copilots senaste Code Review.
+- **09:35–12:00:** Fortsatte med arbetet från föregående arbetsdag. Arbetet omfattade kvalitetssäkring av MixerLab-persistensen och genomgång av GitHub Copilots Code Review.
+- **12:00–14:00:** Lunch.
+
+*Ytterligare arbetstid efter lunch är inte tidsatt i anteckningarna.*
+
+---
 
 ## Sammanfattning av dagen
 
@@ -797,12 +923,18 @@ Arbetsdagen inleddes med ett kort daily sprint/scrum-möte via video med Clara W
 
 Efter mötet fortsatte jag med arbetet från föregående arbetsdag och gick vidare med den senaste Code Review-granskningen från GitHub Copilot.
 
-Granskningen genomfördes efter commit `eef2d98e4` och innehöll 13 punkter med problem och förbättringsförslag. Copilot bekräftade att flera tidigare identifierade problem har åtgärdats, bland annat hanteringen av `MixNotFoundException`, HTTP 404 vid saknade mixes och valideringen av tomma mixnamn.
+Under dagen kompletterade jag integrationstesterna i `MixIT.java` med tester som verifierar att en användare inte kan uppdatera eller ta bort en annan användares mix. Båda testerna godkändes. Det befintliga borttagningstestet kontrollerades också och fungerade som det skulle.
 
-De viktigaste återstående problemen handlar om cross-user authorization, JWT-subject, konsekvent säkerhet i controllern, EQ-validering, track-ordning och transaktionshantering.
+Ett problem med `LazyInitializationException` uppstod när testet försökte läsa `trackIds`. Problemet löstes genom att lägga till `@Transactional` på testmetoden.
 
-Nästa planerade steg är att granska `MixIT.java` för att se hur integrationstesterna kan kompletteras så att det bevisas att en användare inte kan uppdatera eller ta bort en annan användares mix.
+Ändringarna i `MixIT.java` committades och pushades till GitHub med commit `e7431caaf`.
 
-Dagens arbete fortsätter.
+Därefter arbetade jag med JWT-subject-validering i `UserService`. Jag lade till en kontroll som avvisar null, tomma och blankstegsbaserade subjects innan databasanrop görs. Tre nya tester lades till för att verifiera valideringen. Samtliga 16 tester i `UserServiceTest` godkändes utan failures eller errors.
+
+Ändringarna i `UserService.java` och `UserServiceTest.java` committades och pushades till GitHub med commit `8f5489a67`.
+
+Jag genomförde även en ny Code Review med GitHub Copilot efter den senaste committen. Copilot bedömde ändringen som en fokuserad förbättring utan nya uppenbara blockerande problem. De viktigaste återstående områdena handlar fortfarande om HTTP/JWT-säkerhet, EQ-validering och bevarande av track-ordning.
+
+Nästa planerade steg är att granska `SecurityConfig.java` och verifiera hur autentiseringen fungerar för samtliga endpoints i `MixController`.
 
 --

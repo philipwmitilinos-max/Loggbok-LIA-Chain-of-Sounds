@@ -397,7 +397,7 @@ Dagen avslutades efter en genomgång av de återstående förbättringarna. Näs
 
 --
 
-# LIA-loggbok – Onsdag 25 november 2026
+# Daglig LIA-loggbok – Onsdag 25 november 2026
 
 ## 1. Arbetsuppgifter
 
@@ -442,20 +442,15 @@ Dagen avslutades efter en genomgång av de återstående förbättringarna. Näs
 - Granskade den nuvarande klassen `MixEq.java` inför fortsatt arbete med validering av MixerLab-data.
 - Upptäckte att klassen saknar valideringsregler för sina åtta fält. Arbetet med att bestämma tillåtna värdeintervall pausades i väntan på att kontrollera vilka intervall frontendens reglage använder.
 - Avslutade dagens kodarbete med att kontrollera Git-status, granska ändringarna, skapa en commit och pusha den till GitHub.
-
-### Git och versionshantering
-
 - Kontrollerade ändrade filer med `git status`.
 - Granskade ändringarnas omfattning med `git diff --stat`.
 - Lade till tre ändrade filer för commit:
   - `MixService.java`
   - `MixServiceTest.java`
   - `MixControllerTest.java`
-- Skapade commit med följande information:
-
-  **Commit:** `eef2d98e4`  
-  **Commit-meddelande:** `test: add mix validation and not found tests`
-
+- Skapade commit:
+  - **Commit:** `eef2d98e4`
+  - **Commit-meddelande:** `test: add mix validation and not found tests`
 - Pushade committen till GitHub utan problem.
 - Bekräftade att ändringarna skickades till branchen `feature/mixerlab-database-persistence-java`.
 
@@ -574,14 +569,18 @@ Innan jag avslutade dagen granskade jag även `MixEq.java`. Jag upptäckte att v
 
 Sammantaget har jag fått mer erfarenhet av enhetstestning, HTTP-testning, felhantering och versionshantering. Jag har också fått en bättre förståelse för hur viktigt det är att undersöka befintlig kod och affärslogik innan man gör förändringar.
 
+Nästa steg blir att undersöka vilka värdeintervall frontendens reglage använder innan valideringen i `MixEq` implementeras.
+
 ## Arbetstid
 
-- **09:30–09:50:** Daily sprint/scrum via videomöte med Johan Hellberg, Clara Westberg, Ellinor Höijer, Sakarias Eriksson och Nikola Mirosavljevic. En genomgång av MixerLab var planerad, men Nisse deltog inte. Mötet skulle fortsätta kl. 10:00.
-- **09:50–10:00:** Förberedde mig inför mötets fortsättning.
-- **10:00–10:20:** Mötet fortsatte. Frågade Johan om `UserServiceTest`. Johan sa att jag skulle skapa tester för det. Nisse deltog fortfarande inte.
-- **10:20–12:05:** Arbetade med att skapa `UserServiceTest`, granska befintlig servicekod och implementera samt felsöka enhetstester. Hittills hade 13 tester implementerats och verifierats.
-- **12:05–12:45:** Lunch.
-- **12:45–16:30:** Fortsatte arbetet med `UserServiceTest` och gick därefter vidare med MixerLab-relaterad testning. Arbetade med felhantering i `MixService`, uppdaterade `MixServiceTest` och kompletterade `MixControllerTest` med HTTP 400- och 404-tester. Granskade även `MixEq.java`. Avslutade med att skapa och pusha commit `eef2d98e4` till GitHub.
+- 09:30–09:50 – Daily sprint/scrum via videomöte med Johan Hellberg, Clara Westberg, Ellinor Höijer, Sakarias Eriksson och Nikola Mirosavljevic. En genomgång av MixerLab var planerad, men Nisse deltog inte. Mötet skulle fortsätta kl. 10:00.
+- 09:50–10:00 – Förberedde mig inför mötets fortsättning.
+- 10:00–10:20 – Mötet fortsatte. Frågade Johan om `UserServiceTest`. Johan sa att jag skulle skapa tester för det. Nisse deltog fortfarande inte.
+- 10:20–12:05 – Arbetade med att skapa `UserServiceTest`, granska befintlig servicekod och implementera samt felsöka enhetstester. Hittills hade 13 tester implementerats och verifierats.
+- 12:05–12:45 – Lunch.
+- 12:45–16:30 – Fortsatte arbetet med `UserServiceTest` och gick därefter vidare med MixerLab-relaterad testning. Arbetade med felhantering i `MixService`, uppdaterade `MixServiceTest` och kompletterade `MixControllerTest` med HTTP 400- och 404-tester. Granskade även `MixEq.java`. Avslutade med att skapa och pusha commit `eef2d98e4` till GitHub.
+
+**Sluttid:** 16:30
 
 ## Sammanfattning av dagen
 
@@ -608,7 +607,6 @@ Jag avslutade arbetet med att granska ändringarna, skapa commit `eef2d98e4` och
 Slutligen granskade jag `MixEq.java` och identifierade att valideringsregler saknas för dess åtta fält. Nästa steg blir att undersöka vilka värdeintervall frontendens reglage använder innan valideringen implementeras.
 
 Dagens arbete har framför allt gett mig mer erfarenhet av testning, felsökning, felhantering och Git.
-
 --
 
 # Daglig LIA-loggbok – Torsdag 26 november 2026

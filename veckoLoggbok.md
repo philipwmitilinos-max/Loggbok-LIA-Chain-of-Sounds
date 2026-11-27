@@ -207,3 +207,210 @@ Det finns fortfarande några problem att lösa innan arbetet kan betraktas som f
 **Sammanfattningsvis** har veckan inneburit stora framsteg inom testning och databaspersistens, men även en del felsökning kring Hibernate, Flyway och CI. Jag har fått en bättre förståelse för hur man utvecklar, testar och kvalitetssäkrar funktionalitet i ett större Java-projekt.
 
 --
+
+# Veckovis LIA-loggbok
+
+**Vecka:** 48  
+**Datum:** 23–27 november 2026  
+**Arbetsplats:** Chain of Sounds
+
+## 1. Sammanfattning av veckan
+
+Veckan har främst handlat om att kvalitetssäkra backend-implementationen för MixerLabs databaspersistens i Java-projektet `studio-bass-api` och att påbörja undersökningen inför frontend-integrationen.
+
+Veckan inleddes med sprintplanering tillsammans med teamet och individuell handledning med Johan Hellberg. Vi diskuterade bland annat GitHub Actions och hur arbetet med test-branchen och feature-branchen skulle hanteras. Efter Johans förslag mergades test-branchen in i feature-branchen. Den tidigare Pull Requesten #261 stängdes och en ny Pull Request, #265, skapades mot `dev`.
+
+Under måndagen genomförde jag en omfattande backend-verifiering med Maven Wrapper. `MixServiceTest`, `MixIT` och `FlywaySchemaReconciliationIT` passerade. Hela bygget avslutades med `BUILD SUCCESS`, och samtliga sju automatiserade kontroller i GitHub Actions passerade.
+
+Jag fortsatte även granskningen av Copilots tidigare kodgranskningsanmärkningar. Jag undersökte framför allt Flyway-migrationen V26 och upptäckte att de befintliga integrationstesterna inte uttryckligen verifierade denna migration. Därför skapade jag `MixFlywayMigrationIT`, som använder Testcontainers och PostgreSQL för att kontrollera att migrationen skapar tabellerna `mixes` och `mix_tracks` samt deras foreign keys.
+
+Under måndagen och tisdagen arbetade jag även med Code Quality Bots kommentarer. Jag gjorde ändringar i `Mix`-entitetens `toString()`-hantering genom att använda `@ToString` och `@ToString.Exclude`. Ändringarna verifierades med Maven och publicerades senare tillsammans med övriga teständringar.
+
+På tisdagen fortsatte jag med testningen av `MixController`. Jag skapade `MixControllerTest` och implementerade tester för controllerns fyra HTTP-endpoints:
+
+- Skapa en mix.
+- Hämta användarens mixes.
+- Uppdatera en mix.
+- Ta bort en mix.
+
+Samtliga fyra tester passerade. Jag körde därefter `.\mvnw.cmd clean verify`, vilket avslutades med `BUILD SUCCESS`. Jag fortsatte också granskningen av Copilots nya kodgranskningspunkter, framför allt kring JWT-subject, användaridentifiering och felhantering.
+
+Under onsdagen arbetade jag med att skapa en generell testklass för `UserService`. Jag skapade `UserServiceTest.java` med mockade beroenden och implementerade 13 tester som täcker användarhantering, medlemskap, Free Trial och uppdatering av användarroller.
+
+Jag fortsatte även med MixerLab-relaterad testning. I `MixService` ersatte jag generella `RuntimeException` med `MixNotFoundException` när en mix inte hittas. Jag kompletterade även `MixControllerTest` med tester för HTTP 400 och HTTP 404. Samtliga 15 tester i `MixServiceTest` och samtliga 8 tester i `MixControllerTest` passerade.
+
+På torsdagen fortsatte jag med integrationstester för användarägarskap. Jag lade till tester som verifierar att en användare inte kan uppdatera eller ta bort en annan användares mix. Jag löste även ett `LazyInitializationException` genom att använda `@Transactional` på berörda testmetoder.
+
+Jag arbetade också vidare med valideringen av JWT-subject i `UserService`. Med hjälp av `StringUtils.hasText(subject)` lade jag till kontroll av null, tomma strängar och strängar som endast innehåller blanksteg. Tre nya tester lades till och `UserServiceTest` genomfördes med 16 godkända tester.
+
+Under torsdagens eftermiddag påbörjade jag undersökningen av frontend-integrationen för MixerLab. Jag granskade bland annat `MixerLab.tsx`, `mixer.client.ts`, `mixer.types.ts`, `eqTypes.ts` och `useApiClient.ts`. Jag identifierade hur den nuvarande lösningen sparar en mix i `localStorage` och vilka förändringar som behövs för att i stället kunna spara flera namngivna mixes i Java-backenden.
+
+På fredagen deltog jag i en muntlig LIA-redovisning på IT-Högskolan mellan kl. 09:00 och 11:00. Jag berättade kort om min praktik hos Chain of Sounds och vad jag har arbetat med under LIA-perioden.
+
+Efter redovisningen utfördes inget ytterligare utvecklingsarbete eftersom jag kände mig under vädret. Arbetet med frontend-integrationen pausades därför till nästa arbetstillfälle.
+
+## 2. Tekniska kunskaper
+
+Under veckan har jag arbetat med och fördjupat mina kunskaper inom:
+
+- Java och Spring Boot.
+- Spring Data JPA och Hibernate.
+- PostgreSQL och Testcontainers.
+- Flyway och SQL-migrationer.
+- JUnit 5, Mockito och AssertJ.
+- MockMvc och HTTP-tester.
+- Spring MVC och Bean Validation.
+- Spring Security och JWT.
+- `StringUtils.hasText()` för validering.
+- `@Transactional` och Hibernate lazy loading.
+- Lombok, `@ToString` och `@ToString.Exclude`.
+- Maven Wrapper och `clean verify`.
+- Git, branches, commits och Pull Requests.
+- GitHub Actions och CI/CD.
+- Copilot Code Review och Code Quality Bot.
+- React och TypeScript.
+- React Hooks, bland annat `useEffect` och state.
+- Auth0 och autentiserad API-kommunikation.
+- `localStorage` och frontendens API-klientstruktur.
+- IntelliJ IDEA och PowerShell.
+
+Jag har framför allt fördjupat mina kunskaper inom testning av backend-funktionalitet, databasmigrationer, användarägarskap och säker hantering av användaridentitet.
+
+Jag har även fått en bättre förståelse för hur frontendens befintliga API-klient kan byggas ut för att kommunicera med Java-backendens nya mix-endpoints.
+
+## 3. Utmaningar och problemlösning
+
+En viktig del av veckan var att hantera tidigare kodgranskningsanmärkningar och kvalitetssäkra backend-implementationen.
+
+### Flyway-migration och databastester
+
+Jag upptäckte att de befintliga integrationstesterna inte uttryckligen verifierade Flyway-migrationen V26. `MixIT` använde Hibernate för att skapa databasschemat och hade Flyway avstängt i testprofilen.
+
+**Lösning:**
+
+Skapade `MixFlywayMigrationIT` med Testcontainers och PostgreSQL. Testet verifierar att V26 skapar tabellerna `mixes` och `mix_tracks` samt deras foreign keys.
+
+Testet genomfördes framgångsrikt med ett test, noll fel och noll misslyckade tester.
+
+### Problem med Hibernate och LazyInitializationException
+
+Vid integrationstesterna för användarägarskap uppstod ett `LazyInitializationException` när testet försökte komma åt `trackIds` efter att Hibernate-sessionen hade stängts.
+
+**Lösning:**
+
+Lade till `@Transactional` på berörda testmetoder. Därefter kunde testerna genomföras.
+
+### Testning av användarägarskap
+
+Det behövde verifieras att användare inte kan uppdatera eller ta bort andra användares mixes.
+
+**Lösning:**
+
+Lade till integrationstester som kontrollerar att användarägarskapet respekteras vid uppdatering och borttagning av mixes.
+
+### Validering av JWT-subject
+
+Vid granskningen av `UserService` upptäckte jag att metoden `getOrCreateUserBySubject()` saknade en uttrycklig kontroll av om subject är null, tomt eller endast innehåller blanksteg.
+
+**Lösning:**
+
+Införde validering med `StringUtils.hasText(subject)` och lade till tre tester för att verifiera hanteringen av ogiltiga subject-värden.
+
+### Testning av UserService
+
+Vid arbetet med `UserServiceTest` uppstod problem med testdata för Free Trial och betalda medlemskap.
+
+**Lösning:**
+
+Undersökte den bakomliggande affärslogiken i `UserService` och `User`. Jag upptäckte att testdatan behövde innehålla rätt roller, betalningsdatum och ett framtida utgångsdatum för att motsvara villkoren i applikationen.
+
+Efter att testdatan kompletterats fungerade testerna som förväntat.
+
+### Felhantering i MixService
+
+Vid granskningen upptäckte jag att `updateMix()` och `deleteMix()` använde generella `RuntimeException` när en mix inte hittades.
+
+**Lösning:**
+
+Ändrade metoderna så att de använder `MixNotFoundException`. Uppdaterade även tillhörande tester för att kontrollera att rätt undantag kastas.
+
+### HTTP-validering i MixController
+
+De tidigare controller-testerna saknade tester för vissa felaktiga requests.
+
+**Lösning:**
+
+Kompletterade `MixControllerTest` med tester för:
+
+- HTTP 404 när en mix inte hittas vid uppdatering eller borttagning.
+- HTTP 400 när en mix skapas med ett tomt namn.
+- HTTP 400 när en mix uppdateras med ett tomt namn.
+
+Kontrollerade även att `MixService` inte anropas när valideringen misslyckas.
+
+### Undersökning av frontend-integrationen
+
+Vid granskningen av frontend upptäckte jag att MixerLab fortfarande använder `localStorage` för att spara en enda mix. Den nuvarande datastrukturen saknar även ett namn och ett databas-ID.
+
+Backendens `MixRequestDto` kräver ett namn, och frontendens EQ-struktur skiljer sig från backendens `MixEq`.
+
+**Planerad lösning:**
+
+Bygga vidare på den befintliga Mixer API-klienten och `useApiClient()` för att skapa autentiserad kommunikation med Java-backenden. Frontendens TypeScript-typer behöver också anpassas till backendens DTO:er.
+
+Inga frontend-ändringar genomfördes under veckan. Arbetet bestod av undersökning och planering.
+
+### Sjukdomskänsla under fredagen
+
+Efter den muntliga LIA-redovisningen på fredagen kände jag mig under vädret och kunde därför inte fortsätta med det planerade utvecklingsarbetet.
+
+**Hantering:**
+
+Valde att avstå från fortsatt programmering under resten av dagen. Frontend-integrationen skjuts upp till nästa arbetstillfälle.
+
+## 4. Personlig utveckling
+
+Den här veckan har jag fått arbeta mer självständigt med kvalitetssäkring och förbättringar av backend-implementationen.
+
+Jag har fått mer erfarenhet av att analysera kodgranskningsanmärkningar och undersöka den bakomliggande orsaken till problem innan jag genomför förändringar.
+
+Arbetet med `UserServiceTest` har gett mig bättre förståelse för hur man testar affärslogik och hur viktigt det är att testdata motsvarar de faktiska villkoren i applikationen.
+
+Jag har även utvecklat min förståelse för integrationstester och hur Hibernate hanterar relationer och transaktioner.
+
+En annan viktig erfarenhet har varit att arbeta med säkerhet och användarägarskap. Jag har fått en tydligare bild av varför det är viktigt att kontrollera användarens identitet innan en operation genomförs.
+
+Under veckan har jag också fått bättre förståelse för hur olika delar av frontendprojektet är organiserade och hur befintliga API-klienter används för autentiserad kommunikation.
+
+Fredagens muntliga LIA-redovisning gav mig dessutom erfarenhet av att sammanfatta och presentera mitt arbete inför klassen.
+
+## 5. Reflektion och nästa vecka
+
+Jag tycker att veckan har varit produktiv och att jag har gjort flera viktiga framsteg med MixerLabs databaspersistens.
+
+En viktig milstolpe var att få backendens tester och verifiering att fungera samtidigt som jag fortsatte förbättra felhantering, användarägarskap och validering.
+
+Jag har även arbetat vidare med Copilots och Code Quality Bots kodgranskningsanmärkningar. Genom att undersöka problemen och komplettera testerna har jag fått en bättre förståelse för hur viktigt det är att kvalitetssäkra både funktionalitet och säkerhet.
+
+Under torsdagen började jag undersöka frontend-integrationen. Jag har nu en bättre bild av hur MixerLab fungerar och vilka delar som behöver anpassas för att stödja flera sparade mixes med egna namn.
+
+Fredagens redovisning genomfördes som planerat, men på grund av sjukdomskänsla kunde jag inte fortsätta med utvecklingsarbetet efteråt.
+
+### Fokus inför nästa vecka
+
+Under nästa vecka planerar jag att:
+
+- Fortsätta frontend-integrationen för MixerLab.
+- Utöka TypeScript-typerna i `mixer.types.ts` så att de motsvarar backendens DTO:er.
+- Lägga till API-metoder för att skapa, hämta, uppdatera och ta bort mixes i `mixer.client.ts`.
+- Använda den befintliga autentiserade API-lösningen genom `useApiClient()`.
+- Anpassa EQ-värdena i frontend så att de kan skickas till och hämtas från backendens `MixEq`.
+- Implementera stöd för flera sparade mixes med egna namn.
+- Undersöka hur användaren ska kunna välja och återställa en tidigare sparad mix.
+- Fortsätta kontrollera att frontendens backtrack-ID:n motsvarar de ID:n som backend förväntar sig.
+- Testa integrationen mellan frontend och Java-backenden.
+- Fortsätta följa upp eventuella kvarstående kodgranskningsanmärkningar.
+
+**Sammanfattningsvis** har veckan inneburit stora framsteg inom backendens testning, säkerhet och felhantering. Jag har även påbörjat förberedelserna för nästa större steg i arbetet: att koppla MixerLab i frontend till Java-backendens databaslösning.
+
+--

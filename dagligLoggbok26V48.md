@@ -607,6 +607,7 @@ Jag avslutade arbetet med att granska ändringarna, skapa commit `eef2d98e4` och
 Slutligen granskade jag `MixEq.java` och identifierade att valideringsregler saknas för dess åtta fält. Nästa steg blir att undersöka vilka värdeintervall frontendens reglage använder innan valideringen implementeras.
 
 Dagens arbete har framför allt gett mig mer erfarenhet av testning, felsökning, felhantering och Git.
+
 --
 
 # Daglig LIA-loggbok – Torsdag 26 november 2026
@@ -735,3 +736,59 @@ Frontend-koden har ännu inte ändrats. Nästa steg är att börja implementera 
 Fredagen den 27 november ska jag först hålla min muntliga LIA-redovisning på skolan och därefter fortsätta arbetet med frontend-integrationen.
 
 --
+
+# Daglig LIA-loggbok – Fredag 27 november 2026
+
+## 1. Arbetsuppgifter
+
+- Deltog i en muntlig LIA-redovisning på IT-Högskolan tillsammans med klassen.
+- Berättade kort om min LIA-period hos Chain of Sounds och vad jag har arbetat med under praktiken.
+- Redovisningen genomfördes mellan kl. 09:00 och 11:00.
+- Efter redovisningen utfördes inget ytterligare arbete med MixerLab.
+- Anledningen var att jag kände mig under vädret och därför inte hade möjlighet att fortsätta med utvecklingsarbetet.
+- Frontend-integrationen för MixerLab är fortfarande ett kommande arbetsmoment.
+
+## 2. Tekniker och verktyg
+
+- Muntlig presentation.
+- Presentation av genomfört LIA-arbete.
+- IT-Högskolan.
+- Chain of Sounds.
+
+## 3. Problem och lösningar
+
+- Jag kände mig under vädret under dagen och hade därför inte möjlighet att fortsätta med det planerade utvecklingsarbetet för MixerLab.
+- Jag valde att inte fortsätta med programmeringen under resten av dagen.
+- Arbetet med frontend-integrationen skjuts därför upp till nästa arbetstillfälle.
+
+## 4. Ny kunskap
+
+- Fick erfarenhet av att muntligt presentera och sammanfatta mitt LIA-arbete inför klassen.
+- Fick öva på att beskriva arbetsuppgifter och utvecklingsarbete som genomförts under praktiken.
+
+## 5. Reflektion
+
+Dagen började med min muntliga LIA-redovisning på IT-Högskolan. Jag berättade kort om min praktik hos Chain of Sounds och beskrev vad jag har arbetat med under LIA-perioden.
+
+Efter redovisningen hade jag planerat att fortsätta arbetet med MixerLab och frontend-integrationen. Eftersom jag kände mig under vädret valde jag dock att inte fortsätta med utvecklingsarbetet under resten av dagen.
+
+Det har därför inte skett några ytterligare förändringar i MixerLab eller frontend-koden idag.
+
+Nästa steg blir att fortsätta med frontend-integrationen när jag är tillbaka och mår bättre.
+
+## Arbetstid
+
+- 09:00–11:00 – Muntlig LIA-redovisning på IT-Högskolan inför klassen. Berättade kort om vad jag har arbetat med under min LIA hos Chain of Sounds.
+- Efter kl. 11:00 – Inget ytterligare arbete utfördes på grund av sjukdomskänsla.
+
+**Sluttid:** Ej angiven.
+
+## Sammanfattning av dagen
+
+Dagen bestod huvudsakligen av en muntlig LIA-redovisning på IT-Högskolan. Mellan kl. 09:00 och 11:00 presenterade jag kort mitt arbete hos Chain of Sounds inför klassen.
+
+Jag berättade om vad jag har arbetat med under praktiken och sammanfattade delar av utvecklingsarbetet.
+
+Efter redovisningen var planen att fortsätta med MixerLab och frontend-integrationen. Eftersom jag kände mig under vädret utfördes inget ytterligare utvecklingsarbete under dagen.
+
+Frontend-integrationen är fortfarande ett kommande arbetsmoment och arbetet fortsätter vid nästa tillfälle när jag mår bättre.
